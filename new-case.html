@@ -290,6 +290,25 @@
         background: #047857;
     }
 
+    /* Analysis result styles for better formatting */
+    .compliance-section {
+        margin: 1rem 0;
+    }
+    .violation-item {
+        background: #fee2e2;
+        border-left: 4px solid #dc2626;
+        padding: 1rem;
+        margin: 0.5rem 0;
+        border-radius: 0 6px 6px 0;
+    }
+    .approval-item {
+        background: #d1fae5;
+        border-left: 4px solid #059669;
+        padding: 1rem;
+        margin: 0.5rem 0;
+        border-radius: 0 6px 6px 0;
+    }
+
     @media (max-width: 768px) {
       .container {
         padding: 1rem;
@@ -636,13 +655,15 @@
           newCase.documents.push(document.getElementById('pdfUpload').files[0].name);
         }
 
+        // Create proper revision history for the specific case
         newCase.revisionHistory.push({
           revisionNumber: `Rev. 1`,
           date: submissionDate,
           documentsIssued: [initialReceipt, newCase.planSet],
           action: 'Initial Submission',
           initiatedBy: 'client',
-          status: 'submitted'
+          status: 'submitted',
+          permitNumber: permitTempNumber // Link to specific permit
         });
 
         newCase.revisionHistory.push({
@@ -651,7 +672,8 @@
           documentsIssued: [],
           action: 'Pending Review',
           initiatedBy: 'staff',
-          status: 'standby'
+          status: 'standby',
+          permitNumber: permitTempNumber // Link to specific permit
         });
 
         try {
@@ -748,6 +770,7 @@
 
       document.getElementById('dynamicPermitNumberForSMS').textContent = permitNumberToDisplay;
 
+      // Find the specific case by permit number
       const foundCase = cases.find(c => c.permitNumber === permitNumberToDisplay || c.id === permitNumberToDisplay);
 
       if (!foundCase) {
@@ -756,24 +779,35 @@
         return;
       }
 
-      // Render revision history
+      // Render revision history (filtered for this specific case)
       if (foundCase.revisionHistory && foundCase.revisionHistory.length > 0) {
-        clientRevisionHistory.innerHTML = foundCase.revisionHistory.map(revision => `
-          <div class="revision-history-item">
-            <strong>${revision.revisionNumber}</strong> - ${revision.action}<br>
-            <small style="color: #6b7280;">Date: ${revision.date} | Initiated by: ${revision.initiatedBy}</small><br>
-            ${revision.documentsIssued && revision.documentsIssued.length > 0 ? 
-              `<small>Documents: ${revision.documentsIssued.join(', ')}</small>` : 
-              '<small>No documents issued</small>'
-            }
-          </div>
-        `).join('');
+        // Filter revision history to only show entries for this specific permit
+        const caseSpecificHistory = foundCase.revisionHistory.filter(revision => 
+          !revision.permitNumber || revision.permitNumber === permitNumberToDisplay
+        );
+
+        if (caseSpecificHistory.length > 0) {
+          clientRevisionHistory.innerHTML = caseSpecificHistory.map(revision => `
+            <div class="revision-history-item">
+              <strong>${revision.revisionNumber}</strong> - ${revision.action}<br>
+              <small style="color: #6b7280;">Date: ${revision.date} | Initiated by: ${revision.initiatedBy}</small><br>
+              ${revision.documentsIssued && revision.documentsIssued.length > 0 ? 
+                `<small>Documents: ${revision.documentsIssued.join(', ')}</small>` : 
+                '<small>No documents issued</small>'
+              }
+            </div>
+          `).join('');
+        } else {
+          clientRevisionHistory.innerHTML = '<p style="color: #6b7280;">No revision history available for this case.</p>';
+        }
       } else {
         clientRevisionHistory.innerHTML = '<p style="color: #6b7280;">No revision history available.</p>';
       }
 
-      // Show analysis results if available
-      if (foundCase.analysisResult && foundCase.analysisResult !== 'Initial submission received' && foundCase.analysisResult !== 'Initial submission received and validated. Ready for analysis.') {
+      // Show analysis results if available and not initial message
+      if (foundCase.analysisResult && 
+          foundCase.analysisResult !== 'Initial submission received' && 
+          foundCase.analysisResult !== 'Initial submission received and validated. Ready for analysis.') {
         analysisResultsSection.classList.remove('hidden');
         clientAnalysisResults.innerHTML = foundCase.analysisResult;
       } else {
@@ -783,19 +817,24 @@
       // Show approved documents section if case is approved
       if (foundCase.status === 'Approved') {
         approvedDocumentsSection.classList.remove('hidden');
+        // Remove TEMP prefix for display
+        const finalPermitNumber = foundCase.permitNumber.replace('TEMP-', '');
         sealedPlansDownload.innerHTML = `
-          <button class="download-btn" onclick="downloadSealedPlans('${foundCase.permitNumber}')">
+          <button class="download-btn" onclick="downloadSealedPlans('${finalPermitNumber}')">
             📋 Download Sealed Plans
           </button>
           <p style="margin-top: 1rem; font-size: 16px; color: #059669;">
-            File: APPROVED_SEALED_PLANS_${foundCase.permitNumber}.pdf
+            File: APPROVED_SEALED_PLANS_${finalPermitNumber}.pdf
+          </p>
+          <p style="margin-top: 0.5rem; font-size: 14px; color: #6b7280;">
+            Final Permit Number: ${finalPermitNumber}
           </p>
         `;
       } else {
         approvedDocumentsSection.classList.add('hidden');
       }
 
-      // Render case documents
+      // Render case documents (filtered for this specific case)
       if (foundCase.documents && foundCase.documents.length > 0) {
         caseDocumentsDisplay.innerHTML = foundCase.documents.map(doc => `
           <p>📄 <a href="#" onclick="alert('Document download: ${doc}')">${doc}</a></p>
@@ -809,7 +848,7 @@
 
     function downloadSealedPlans(permitNumber) {
       // Simulate sealed plans download
-      alert(`🎉 Downloading sealed plans for permit ${permitNumber}!\n\nFile: APPROVED_SEALED_PLANS_${permitNumber}.pdf\n\nThese are your official, sealed building plans approved by the municipal building department.`);
+      alert(`🎉 Downloading sealed plans for permit ${permitNumber}!\n\nFile: APPROVED_SEALED_PLANS_${permitNumber}.pdf\n\nThese are your official, sealed building plans approved by the municipal building department.\n\n✅ Your permit is now active and construction may begin!`);
     }
 
     // Expose functions globally
@@ -819,6 +858,7 @@
     
     console.log('✅ Client Portal Initialized Successfully');
     console.log('🔗 Database integration ready');
+    console.log('🎯 Case isolation system active');
   </script>
 </body>
 </html>
