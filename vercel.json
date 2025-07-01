@@ -1,0 +1,63 @@
+{
+  "version": 2,
+  "name": "globe-municipal-permits",
+  "builds": [
+    {
+      "src": "*.html",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/client",
+      "dest": "/new-case.html"
+    },
+    {
+      "src": "/apply",
+      "dest": "/new-case.html"
+    },
+    {
+      "src": "/employee",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/login",
+      "dest": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co;"
+        }
+      ]
+    }
+  ],
+  "env": {
+    "SUPABASE_URL": "https://itjvhwmqhhmolumajmrh.supabase.co",
+    "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0anZod21xaGhtb2x1bWFqbXJoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTExMjM0NTAsImV4cCI6MjA2NjY5OTQ1MH0.ctj0ZeYLe_wk6ZNGENDtjsriUR5hfHxZUp9K67wW7MU"
+  }
+}

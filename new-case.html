@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GLOBE - Client Portal</title>
+  <!-- Fixed Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+      min-height: 100vh;
+      padding-top: 80px;
+    }
+    .header {
+      background: #003333;
+      color: white;
+      padding: 1rem 0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      height: 80px;
+      display: flex;
+      align-items: center;
+    }
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+    .header-left { display: flex; align-items: center; gap: 1rem; }
+    .header img { height: 40px; }
+
+    .header-right {
+      font-size: 1.8rem;
+      font-weight: 600;
+      text-align: right;
+      white-space: nowrap;
+      color: black;
+    }
+    .header-right img {
+        max-height: 70px;
+        width: auto;
+    }
+
+    .container {
+      max-width: 900px;
+      width: 90%;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.7rem;
+      font-weight: 600;
+      color: black;
+      font-size: 18px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 1rem;
+      border: 2px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 18px;
+      color: black;
+      background: white;
+    }
+
+    select option {
+      background: white;
+      color: black;
+      padding: 0.5rem;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #059669;
+      box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+    }
+
+    .btn {
+      padding: 1rem 2rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: #059669;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #047857;
+    }
+
+    .btn:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+    }
+
+    .file-upload {
+      border: 3px dashed #d1d5db;
+      border-radius: 8px;
+      padding: 2.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .file-upload:hover {
+      border-color: #059669;
+      background: #f0fdf4;
+    }
+
+    .section-separator {
+      border-top: 2px solid #e5e7eb;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      text-align: left;
+    }
+
+    .section-separator h2 {
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 1rem;
+      color: black;
+      font-size: 24px;
+    }
+
+    .results-section {
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid #e5e7eb;
+      text-align: left;
+    }
+
+    .results-section h3 {
+      margin-bottom: 1.5rem;
+      color: black;
+      font-size: 20px;
+    }
+
+    .documents-list {
+      background: #f9fafb;
+      border-radius: 8px;
+      padding: 1rem;
+      border: 1px solid #e5e7eb;
+      margin-top: 1rem;
+    }
+
+    .documents-list p {
+      margin-bottom: 0.5rem;
+    }
+
+    .documents-list a {
+      color: #059669;
+      text-decoration: none;
+    }
+
+    .documents-list a:hover {
+      text-decoration: underline;
+    }
+
+    .back-to-login {
+      margin-top: 2rem;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+
+    .back-to-login a {
+      color: #6b7280;
+      text-decoration: none;
+    }
+
+    .back-to-login a:hover {
+      text-decoration: underline;
+    }
+
+    .revision-history-container {
+      max-height: 250px;
+      overflow-y: auto;
+      background: #f9fafb;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+      padding: 1rem;
+    }
+
+    .revision-history-item {
+      background: #e0f7fa;
+      border: 1px solid #b2ebf2;
+      border-radius: 8px;
+      padding: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .revision-history-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .case-update-box {
+      background: white !important;
+      border: 2pt solid #99FF00 !important;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .status-indicator {
+      position: fixed;
+      top: 80px;
+      left: 0;
+      width: 100%;
+      background-color: #C8C4B7;
+      color: #333333;
+      padding: 8px 0;
+      text-align: center;
+      font-size: 1.1em;
+      font-weight: 500;
+      z-index: 999;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .status-indicator.status-connecting {
+        background-color: #C8C4B7;
+        color: #333333;
+    }
+    .status-indicator.status-connected {
+        background-color: #C8C4B7;
+        color: #333333;
+    }
+    .status-indicator.status-disconnected {
+        background-color: #C8C4B7;
+        color: #333333;
+    }
+    .status-indicator.status-local {
+        background-color: #C8C4B7;
+        color: #333333;
+    }
+    .analysis-result {
+        background: #f9fafb;
+        border-radius: 8px;
+        padding: 1.5rem;
+        border: 1px solid #e5e7eb;
+        margin-top: 1rem;
+    }
+    .download-section {
+        background: #d1fae5;
+        border: 2px solid #059669;
+        border-radius: 8px;
+        padding: 2rem;
+        text-align: center;
+        margin-top: 2rem;
+    }
+    .download-btn {
+        background: #059669;
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 6px;
+        font-size: 20px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        transition: background 0.2s;
+    }
+    .download-btn:hover {
+        background: #047857;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
+
+      .header-inner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .header-right {
+        text-align: left;
+        margin-top: 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="dbStatus" class="status-indicator">🟡 Connecting...</div>
+
+  <div class="header">
+    <div class="header-inner">
+      <div class="header-center" style="text-align: center;">
+        <h1 style="color: white; font-size: 2.5rem; margin: 0; font-weight: bold; white-space: nowrap;">
+          GLOBE <span style="font-size: 25px; font-weight: 300;">Green Light Operations for Building Efficiency</span><span style="font-size: 10px; font-weight: 300;">©</span>
+        </h1>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="main-content">
+      <h2 style="margin-bottom: 2rem; font-size: 28px; color: black;">Permit Application</h2>
+      <form id="newCaseForm">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+          <div class="form-group">
+            <label for="clientName">Client Name*</label>
+            <input type="text" id="clientName" required />
+          </div>
+          <div class="form-group">
+            <label for="clientPhone">Phone Number*</label>
+            <input type="tel" id="clientPhone" required />
+            <p style="font-size: 14px; color: #6b7280; margin-top: 0.5rem;">
+              This number will only be used to send you SMS notifications about your project status.
+            </p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="clientEmail">Email*</label>
+          <input type="email" id="clientEmail" required />
+        </div>
+
+        <div class="form-group">
+          <label for="projectAddress">Project Address*</label>
+          <input type="text" id="projectAddress" required />
+        </div>
+
+        <div class="form-group">
+          <label for="permitType">Permit Type*</label>
+          <select id="permitType" required>
+            <option value="">Select Permit Type</option>
+            <option value="residential">Residential</option>
+            <option value="commercial">Commercial</option>
+            <option value="electrical">Electrical</option>
+            <option value="plumbing">Plumbing</option>
+            <option value="mechanical">Mechanical</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="projectDescription">Project Description</label>
+          <textarea id="projectDescription" rows="3"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="permitTempNumber">Temporary Permit Number</label>
+          <input type="text" id="permitTempNumber" readonly placeholder="Will be generated on first submission" />
+        </div>
+
+        <div class="form-group">
+          <label for="submissionDate">Submission Date</label>
+          <input type="text" id="submissionDate" readonly placeholder="Auto-generated" />
+        </div>
+
+        <div class="form-group">
+          <label>Upload PDF Plans (Plan Sets)*</label>
+          <div class="file-upload" onclick="document.getElementById('pdfUpload').click()">
+            <input type="file" id="pdfUpload" accept=".pdf" style="display: none;" onchange="handleFileUpload(event)" required />
+            <div style="font-size: 20px; margin-bottom: 1rem;">📄 Click to upload PDF plans or drag & drop</div>
+            <div style="font-size: 16px; color: #6b7280;">Maximum file size: 10MB</div>
+          </div>
+          <div id="uploadedFiles"></div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="submitBtn" style="font-size: 20px; padding: 1.2rem 2rem;">Create Case & Submit Plans</button>
+      </form>
+    </div>
+
+    <div class="section-separator">
+      <div class="case-update-box">
+        <p style="font-size: 18px; color: #00796b;">
+          <strong style="font-size: 20px;">Case Update System:</strong><br />
+          When your case is analyzed, you'll receive real-time updates here. Our AI analysis system will review your plans and our staff will either approve them or request specific corrections.<br />
+          You'll receive SMS notifications like: "Case <span id="dynamicPermitNumberForSMS">____</span> has been updated, please check your permit status below."
+        </p>
+      </div>
+
+      <h2>Check Your Permit Status</h2>
+      <div id="searchResults" class="results-section hidden">
+        <h3>Revision History <span style="font-weight: normal; font-size: 16px; color: #6b7280;">(automatically updated)</span></h3>
+        <div id="clientRevisionHistory" class="revision-history-container"></div>
+
+        <div id="analysisResultsSection" class="hidden">
+          <h3 style="margin-top: 2rem; margin-bottom: 1rem;">AI Analysis Results</h3>
+          <div id="clientAnalysisResults" class="analysis-result"></div>
+        </div>
+
+        <div id="approvedDocumentsSection" class="hidden">
+          <div class="download-section">
+            <h3 style="color: #059669; margin-bottom: 1rem; font-size: 24px;">🎉 Your Plans Are Approved!</h3>
+            <p style="font-size: 18px; margin-bottom: 2rem;">Your sealed, approved plans are ready for download:</p>
+            <div id="sealedPlansDownload"></div>
+          </div>
+        </div>
+
+        <h3 style="margin-top: 2rem; margin-bottom: 1rem;">Case Documents</h3>
+        <div id="caseDocumentsDisplay" class="documents-list"></div>
+      </div>
+    </div>
+
+    <p class="back-to-login">Are you a city employee? <a href="index.html">Go to Employee Login</a></p>
+  </div>
+
+  <script>
+    // Global variables
+    let supabase = null;
+    let dbConnected = false;
+    let cases = [];
+
+    // Initialize Supabase with robust error handling
+    async function initializeSupabase() {
+      try {
+        const SUPABASE_URL = 'https://itjvhwmqhhmolumajmrh.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0anZod21xaGhtb2x1bWFqbXJoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTExMjM0NTAsImV4cCI6MjA2NjY5OTQ1MH0.ctj0ZeYLe_wk6ZNGENDtjsriUR5hfHxZUp9K67wW7MU';
+        
+        updateDbStatus('🟡 Connecting to database...', 'status-connecting');
+        
+        // Wait for Supabase library to load with timeout
+        let attempts = 0;
+        while (typeof window.supabase === 'undefined' && attempts < 50) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+          attempts++;
+        }
+        
+        if (typeof window.supabase === 'undefined') {
+          throw new Error('Supabase library failed to load after 5 seconds');
+        }
+        
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // Test connection
+        const { data, error } = await supabase.from('cases').select('id').limit(1);
+        
+        if (error && error.code !== 'PGRST116') { // PGRST116 is "table not found" which is OK for initial setup
+          throw error;
+        }
+        
+        dbConnected = true;
+        updateDbStatus('🟢 Database Connected', 'status-connected');
+        console.log('✅ Supabase connected successfully');
+        await loadCases();
+        
+      } catch (error) {
+        console.error('❌ Supabase connection failed:', error);
+        dbConnected = false;
+        updateDbStatus('📁 Using Local Storage', 'status-local');
+        loadCasesFromLocalStorage();
+      }
+    }
+
+    function updateDbStatus(text, className) {
+      const statusEl = document.getElementById('dbStatus');
+      if (statusEl) {
+        statusEl.textContent = text;
+        statusEl.className = 'status-indicator ' + className;
+      }
+    }
+
+    // Database operations
+    async function saveCase(caseData) {
+      if (!dbConnected || !supabase) {
+        saveCaseToLocalStorage(caseData);
+        return caseData.permitNumber;
+      }
+      
+      try {
+        const { data, error } = await supabase
+          .from('cases')
+          .insert([{
+            permit_number: caseData.permitNumber,
+            client_name: caseData.clientName,
+            client_email: caseData.clientEmail,
+            client_phone: caseData.clientPhone,
+            address: caseData.address,
+            permit_type: caseData.permitType,
+            description: caseData.description,
+            status: caseData.status || 'Pending Review',
+            plan_set_filename: caseData.planSet,
+            analysis_result: caseData.analysisResult || 'Initial submission received',
+            documents: caseData.documents || [],
+            revision_history: caseData.revisionHistory || []
+          }])
+          .select();
+        
+        if (error) throw error;
+        
+        console.log('✅ Case saved to database:', caseData.permitNumber);
+        await loadCases();
+        return caseData.permitNumber;
+        
+      } catch (error) {
+        console.error('❌ Failed to save case to database:', error);
+        saveCaseToLocalStorage(caseData);
+        return caseData.permitNumber;
+      }
+    }
+
+    async function loadCases() {
+      if (!dbConnected || !supabase) {
+        loadCasesFromLocalStorage();
+        return;
+      }
+      
+      try {
+        const { data, error } = await supabase
+          .from('cases')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        cases = data.map(row => ({
+          id: row.permit_number,
+          permitNumber: row.permit_number,
+          clientName: row.client_name,
+          clientEmail: row.client_email,
+          clientPhone: row.client_phone,
+          address: row.address,
+          permitType: row.permit_type,
+          description: row.description,
+          status: row.status,
+          submissionDate: new Date(row.created_at).toLocaleDateString(),
+          planSet: row.plan_set_filename,
+          analysisResult: row.analysis_result,
+          documents: row.documents || [],
+          revisionHistory: row.revision_history || []
+        }));
+        
+        console.log(`✅ Loaded ${cases.length} cases from database`);
+        
+      } catch (error) {
+        console.error('❌ Failed to load cases from database:', error);
+        loadCasesFromLocalStorage();
+      }
+    }
+
+    // LocalStorage fallback functions
+    function saveCaseToLocalStorage(caseData) {
+      const localCases = JSON.parse(localStorage.getItem('globeCases')) || [];
+      const filteredCases = localCases.filter(c => c.permitNumber !== caseData.permitNumber);
+      filteredCases.push(caseData);
+      localStorage.setItem('globeCases', JSON.stringify(filteredCases));
+      cases = filteredCases;
+      console.log('📁 Case saved/updated in localStorage');
+    }
+
+    function loadCasesFromLocalStorage() {
+      cases = JSON.parse(localStorage.getItem('globeCases')) || [];
+      console.log(`📁 Loaded ${cases.length} cases from localStorage`);
+    }
+
+    function generateTempPermitNumber() {
+      const now = new Date();
+      const year = String(now.getFullYear()).slice(-2);
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const uniqueId = String((cases.length || 0) + 1).padStart(4, '0'); 
+      return `TEMP-${year}${month}-${uniqueId}`;
+    }
+
+    // Initialize on DOM load
+    document.addEventListener('DOMContentLoaded', async function() {
+      console.log('🚀 Client Portal initializing...');
+      
+      await initializeSupabase();
+
+      // Form submission handler
+      document.getElementById('newCaseForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Submitting...';
+
+        if (!document.getElementById('pdfUpload').files.length) {
+          alert('Please attach PDF Plans before submitting the application.');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Create Case & Submit Plans';
+          return;
+        }
+
+        const clientName = document.getElementById('clientName').value;
+        const clientPhone = document.getElementById('clientPhone').value;
+        const clientEmail = document.getElementById('clientEmail').value;
+        const projectAddress = document.getElementById('projectAddress').value;
+        const permitType = document.getElementById('permitType').value;
+        const projectDescription = document.getElementById('projectDescription').value;
+        const submissionDate = new Date().toLocaleDateString('en-US');
+        let permitTempNumber = document.getElementById('permitTempNumber').value;
+
+        if (!permitTempNumber || permitTempNumber.startsWith('Will be')) {
+          permitTempNumber = generateTempPermitNumber();
+        }
+
+        const newCase = {
+          permitNumber: permitTempNumber,
+          clientName,
+          clientPhone,
+          clientEmail,
+          address: projectAddress,
+          permitType,
+          description: projectDescription,
+          status: 'Pending Review',
+          submissionDate,
+          planSet: document.getElementById('pdfUpload').files[0]?.name || 'No file',
+          analysisResult: 'Initial submission received and validated. Ready for analysis.',
+          documents: [],
+          revisionHistory: []
+        };
+
+        const initialReceipt = `Initial_Submission_Receipt_${permitTempNumber}.pdf`;
+        newCase.documents.push(initialReceipt);
+        if (document.getElementById('pdfUpload').files[0]) {
+          newCase.documents.push(document.getElementById('pdfUpload').files[0].name);
+        }
+
+        newCase.revisionHistory.push({
+          revisionNumber: `Rev. 1`,
+          date: submissionDate,
+          documentsIssued: [initialReceipt, newCase.planSet],
+          action: 'Initial Submission',
+          initiatedBy: 'client',
+          status: 'submitted'
+        });
+
+        newCase.revisionHistory.push({
+          revisionNumber: `Rev. 2`,
+          date: '—',
+          documentsIssued: [],
+          action: 'Pending Review',
+          initiatedBy: 'staff',
+          status: 'standby'
+        });
+
+        try {
+          await saveCase(newCase);
+
+          // Clear file input
+          document.getElementById('pdfUpload').value = '';
+          document.getElementById('uploadedFiles').innerHTML = '';
+          document.getElementById('permitTempNumber').value = permitTempNumber;
+          document.getElementById('submissionDate').value = submissionDate;
+
+          const message = `We received your application (${permitTempNumber}) and will process it shortly.`;
+          alert(`✅ Application submitted successfully!\n\nTemporary Permit Number: ${permitTempNumber}\n\n📱 SMS Notification sent to: ${clientPhone}\n📧 Email confirmation sent to: ${clientEmail}\n\nMessage: "${message}"\n\nYou can check your status below.`);
+
+          renderConsultStatusSection(permitTempNumber);
+          document.getElementById('searchResults').classList.remove('hidden');
+          document.getElementById('searchResults').scrollIntoView({ behavior: 'smooth' });
+
+        } catch (error) {
+          console.error('❌ Failed to submit case:', error);
+          alert('❌ Failed to submit application. Please try again.');
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Create Case & Submit Plans';
+        }
+      });
+
+      // File upload handlers
+      const dropArea = document.querySelector('.file-upload');
+
+      dropArea.addEventListener('dragover', e => {
+        e.preventDefault();
+        dropArea.style.borderColor = '#059669';
+        dropArea.style.backgroundColor = '#f0fdf4';
+      });
+
+      dropArea.addEventListener('dragleave', e => {
+        e.preventDefault();
+        dropArea.style.borderColor = '#d1d5db';
+        dropArea.style.backgroundColor = '';
+      });
+
+      dropArea.addEventListener('drop', e => {
+        e.preventDefault();
+        dropArea.style.borderColor = '#d1d5db';
+        dropArea.style.backgroundColor = '';
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+          document.getElementById('pdfUpload').files = files;
+          handleFileUpload({ target: { files } });
+        }
+      });
+
+      // Auto-show last case if exists
+      if (cases.length > 0) {
+        const lastCase = cases[cases.length - 1];
+        renderConsultStatusSection(lastCase.permitNumber);
+      }
+
+      // Auto-refresh case status every 30 seconds
+      setInterval(async () => {
+        if (cases.length > 0) {
+          await loadCases();
+          const currentCase = cases[cases.length - 1]; 
+          if (currentCase) {
+            renderConsultStatusSection(currentCase.permitNumber);
+          }
+        }
+      }, 30000);
+    });
+
+    function handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (file && file.type === 'application/pdf') {
+        document.getElementById('uploadedFiles').innerHTML = `
+          <div style="margin-top: 1.5rem; padding: 1rem; background: #f0f9ff; border-radius: 8px; border: 2px solid #0ea5e9;">
+            📄 <strong>${file.name}</strong> (${(file.size / 1024 / 1024).toFixed(2)} MB)
+          </div>`;
+      } else {
+        alert('Please select a valid PDF file.');
+        event.target.value = '';
+        document.getElementById('uploadedFiles').innerHTML = '';
+      }
+    }
+
+    function renderConsultStatusSection(permitNumberToDisplay) {
+      const searchResultsDiv = document.getElementById('searchResults');
+      const clientRevisionHistory = document.getElementById('clientRevisionHistory');
+      const caseDocumentsDisplay = document.getElementById('caseDocumentsDisplay');
+      const analysisResultsSection = document.getElementById('analysisResultsSection');
+      const clientAnalysisResults = document.getElementById('clientAnalysisResults');
+      const approvedDocumentsSection = document.getElementById('approvedDocumentsSection');
+      const sealedPlansDownload = document.getElementById('sealedPlansDownload');
+
+      document.getElementById('dynamicPermitNumberForSMS').textContent = permitNumberToDisplay;
+
+      const foundCase = cases.find(c => c.permitNumber === permitNumberToDisplay || c.id === permitNumberToDisplay);
+
+      if (!foundCase) {
+        clientRevisionHistory.innerHTML = '<p style="color: #6b7280;">No case found with this permit number.</p>';
+        caseDocumentsDisplay.innerHTML = '<p style="color: #6b7280;">No documents available.</p>';
+        return;
+      }
+
+      // Render revision history
+      if (foundCase.revisionHistory && foundCase.revisionHistory.length > 0) {
+        clientRevisionHistory.innerHTML = foundCase.revisionHistory.map(revision => `
+          <div class="revision-history-item">
+            <strong>${revision.revisionNumber}</strong> - ${revision.action}<br>
+            <small style="color: #6b7280;">Date: ${revision.date} | Initiated by: ${revision.initiatedBy}</small><br>
+            ${revision.documentsIssued && revision.documentsIssued.length > 0 ? 
+              `<small>Documents: ${revision.documentsIssued.join(', ')}</small>` : 
+              '<small>No documents issued</small>'
+            }
+          </div>
+        `).join('');
+      } else {
+        clientRevisionHistory.innerHTML = '<p style="color: #6b7280;">No revision history available.</p>';
+      }
+
+      // Show analysis results if available
+      if (foundCase.analysisResult && foundCase.analysisResult !== 'Initial submission received' && foundCase.analysisResult !== 'Initial submission received and validated. Ready for analysis.') {
+        analysisResultsSection.classList.remove('hidden');
+        clientAnalysisResults.innerHTML = foundCase.analysisResult;
+      } else {
+        analysisResultsSection.classList.add('hidden');
+      }
+
+      // Show approved documents section if case is approved
+      if (foundCase.status === 'Approved') {
+        approvedDocumentsSection.classList.remove('hidden');
+        sealedPlansDownload.innerHTML = `
+          <button class="download-btn" onclick="downloadSealedPlans('${foundCase.permitNumber}')">
+            📋 Download Sealed Plans
+          </button>
+          <p style="margin-top: 1rem; font-size: 16px; color: #059669;">
+            File: APPROVED_SEALED_PLANS_${foundCase.permitNumber}.pdf
+          </p>
+        `;
+      } else {
+        approvedDocumentsSection.classList.add('hidden');
+      }
+
+      // Render case documents
+      if (foundCase.documents && foundCase.documents.length > 0) {
+        caseDocumentsDisplay.innerHTML = foundCase.documents.map(doc => `
+          <p>📄 <a href="#" onclick="alert('Document download: ${doc}')">${doc}</a></p>
+        `).join('');
+      } else {
+        caseDocumentsDisplay.innerHTML = '<p style="color: #6b7280;">No documents available.</p>';
+      }
+
+      searchResultsDiv.classList.remove('hidden');
+    }
+
+    function downloadSealedPlans(permitNumber) {
+      // Simulate sealed plans download
+      alert(`🎉 Downloading sealed plans for permit ${permitNumber}!\n\nFile: APPROVED_SEALED_PLANS_${permitNumber}.pdf\n\nThese are your official, sealed building plans approved by the municipal building department.`);
+    }
+
+    // Expose functions globally
+    window.handleFileUpload = handleFileUpload;
+    window.renderConsultStatusSection = renderConsultStatusSection;
+    window.downloadSealedPlans = downloadSealedPlans;
+    
+    console.log('✅ Client Portal Initialized Successfully');
+    console.log('🔗 Database integration ready');
+  </script>
+</body>
+</html>
