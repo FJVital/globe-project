@@ -116,8 +116,9 @@
         }
         .btn-primary { background: #059669; color: white; }
         .btn-primary:hover { background: #047857; }
-        .btn-analyze { background: #FF6600; color: white; }
+        .btn-analyze { background: #FF6600; color: white; position: relative; }
         .btn-analyze:hover { background: #E55A00; }
+        .btn-analyze:disabled { background: #9ca3af; cursor: not-allowed; }
         .btn-corrections { background: #D40000; color: white; }
         .btn-corrections:hover { background: #B30000; }
         .btn-approve { background: #00AA00; color: white; }
@@ -213,6 +214,7 @@
         .status-pendingreview { background: #fef3c7; color: #d97706; }
         .status-approved { background: #d1fae5; color: #059669; }
         .status-correctionsneeded { background: #fee2e2; color: #dc2626; }
+        .status-underreview { background: #dbeafe; color: #2563eb; }
         .main-content { 
             background: white; 
             border-radius: 8px; 
@@ -332,6 +334,117 @@
             padding: 1rem;
             margin: 0.5rem 0;
         }
+
+        /* Analysis Loading Styles */
+        .analysis-loading {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            border-radius: 8px;
+            padding: 2rem;
+            margin: 2rem 0;
+            text-align: center;
+        }
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f4f6;
+            border-radius: 50%;
+            border-top-color: #f59e0b;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 1rem;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .analysis-steps {
+            margin: 1rem 0;
+            text-align: left;
+        }
+        .analysis-step {
+            padding: 0.5rem 0;
+            font-size: 16px;
+            color: #374151;
+        }
+        .analysis-step.active {
+            color: #f59e0b;
+            font-weight: 600;
+        }
+
+        /* Code Management Styles */
+        .code-section {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        .code-section-header {
+            background: #f9fafb;
+            padding: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            font-weight: 600;
+            font-size: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .code-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .code-item {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .code-item:hover {
+            background: #f9fafb;
+        }
+        .code-info {
+            flex: 1;
+        }
+        .code-section-name {
+            font-weight: 600;
+            color: #111827;
+        }
+        .code-description {
+            font-size: 14px;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+        .code-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 14px;
+        }
+        .btn-approve {
+            background: #059669;
+            color: white;
+        }
+        .btn-reject {
+            background: #dc2626;
+            color: white;
+        }
+        .btn-edit {
+            background: #f59e0b;
+            color: white;
+        }
+        .code-search {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .code-search input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
@@ -423,15 +536,15 @@
             <!-- Global Stats Bar -->
             <div class="global-stats-bar">
                 <div class="global-stat-item">
-                    <div class="global-stat-number" id="agentCitiesScanned">0</div>
+                    <div class="global-stat-number" id="agentCitiesScanned">12</div>
                     <div class="global-stat-label">Cities Scanned</div>
                 </div>
                 <div class="global-stat-item">
-                    <div class="global-stat-number" id="agentCodesFound">0</div>
+                    <div class="global-stat-number" id="agentCodesFound">247</div>
                     <div class="global-stat-label">Codes Discovered</div>
                 </div>
                 <div class="global-stat-item">
-                    <div class="global-stat-number" id="agentViolationsDetected">0</div>
+                    <div class="global-stat-number" id="agentViolationsDetected">891</div>
                     <div class="global-stat-label">Violation Rules Created</div>
                 </div>
                 <div class="global-stat-item">
@@ -561,10 +674,92 @@
 
             <div id="codeManagementTab" class="hidden">
                 <div class="main-content">
-                    <h2 style="font-size: 24px; color: black;">Building Code Management</h2>
-                    <p style="font-size: 18px; color: black;">Manage municipal building codes and compliance rules.</p>
-                    <div style="margin-top: 2rem;">
-                        <button class="btn btn-primary" onclick="alert('Code management functionality ready for implementation')">Add New Code</button>
+                    <h2 style="font-size: 24px; color: black; margin-bottom: 2rem;">Building Code Management</h2>
+                    
+                    <!-- Pending Approval Section -->
+                    <div class="code-section">
+                        <div class="code-section-header">
+                            <span>📋 Pending Approval (3)</span>
+                            <div>
+                                <button class="btn btn-approve btn-small" onclick="approveAllCodes()">Approve All</button>
+                                <button class="btn btn-reject btn-small" onclick="rejectAllCodes()" style="margin-left: 0.5rem;">Reject All</button>
+                            </div>
+                        </div>
+                        <div class="code-list" id="pendingCodesList">
+                            <div class="code-item">
+                                <div class="code-info">
+                                    <div class="code-section-name">NEC 110.26(A)(1) - Electrical Panel Clearance</div>
+                                    <div class="code-description">Working space shall be not less than 30 inches wide in front of electrical equipment</div>
+                                </div>
+                                <div class="code-actions">
+                                    <button class="btn btn-approve btn-small">Approve</button>
+                                    <button class="btn btn-reject btn-small">Reject</button>
+                                    <button class="btn btn-edit btn-small">Edit</button>
+                                </div>
+                            </div>
+                            <div class="code-item">
+                                <div class="code-info">
+                                    <div class="code-section-name">IRC R602.7.1 - Header Beam Sizing</div>
+                                    <div class="code-description">Headers shall be sized according to span tables for structural adequacy</div>
+                                </div>
+                                <div class="code-actions">
+                                    <button class="btn btn-approve btn-small">Approve</button>
+                                    <button class="btn btn-reject btn-small">Reject</button>
+                                    <button class="btn btn-edit btn-small">Edit</button>
+                                </div>
+                            </div>
+                            <div class="code-item">
+                                <div class="code-info">
+                                    <div class="code-section-name">NEC 210.8(A)(1) - GFCI Protection</div>
+                                    <div class="code-description">GFCI protection required for bathroom receptacle outlets</div>
+                                </div>
+                                <div class="code-actions">
+                                    <button class="btn btn-approve btn-small">Approve</button>
+                                    <button class="btn btn-reject btn-small">Reject</button>
+                                    <button class="btn btn-edit btn-small">Edit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Approved Codes Section -->
+                    <div class="code-section">
+                        <div class="code-section-header">
+                            <span>✅ Approved Codes (247)</span>
+                            <button class="btn btn-primary btn-small" onclick="addNewCode()">Add New Code</button>
+                        </div>
+                        <div class="code-search">
+                            <input type="text" placeholder="Search codes..." id="codeSearch" onkeyup="filterCodes()">
+                        </div>
+                        <div class="code-list" id="approvedCodesList">
+                            <div class="code-item">
+                                <div class="code-info">
+                                    <div class="code-section-name">NEC 210.19(A)(1) - Circuit Capacity</div>
+                                    <div class="code-description">Branch circuits shall not exceed 80% of rated capacity for continuous loads</div>
+                                </div>
+                                <div class="code-actions">
+                                    <button class="btn btn-edit btn-small">Edit</button>
+                                </div>
+                            </div>
+                            <div class="code-item">
+                                <div class="code-info">
+                                    <div class="code-section-name">IRC R310.2.1 - Emergency Egress</div>
+                                    <div class="code-description">Bedrooms shall have at least one operable emergency escape window</div>
+                                </div>
+                                <div class="code-actions">
+                                    <button class="btn btn-edit btn-small">Edit</button>
+                                </div>
+                            </div>
+                            <div class="code-item">
+                                <div class="code-info">
+                                    <div class="code-section-name">IFC 503.2.1 - Fire Lane Width</div>
+                                    <div class="code-description">Fire apparatus access roads shall be not less than 20 feet in width</div>
+                                </div>
+                                <div class="code-actions">
+                                    <button class="btn btn-edit btn-small">Edit</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -578,6 +773,8 @@
         let cases = [];
         let supabase = null;
         let dbConnected = false;
+        let currentCaseId = null;
+        let analysisInProgress = false;
 
         // Initialize Supabase with proper error handling
         async function initializeSupabase() {
@@ -628,12 +825,112 @@
             }
         }
 
-        // PDF Sealing Functions
+        // Generate permit-specific AI analysis
+        function generatePermitSpecificAnalysis(permitType) {
+            const analysisTemplates = {
+                'electrical': `
+                    <div class="compliance-section">
+                        <h4 style="color: #059669; margin-bottom: 1rem;">⚡ CodeX AI Electrical Analysis Complete</h4>
+                        <div class="violation-item">
+                            <strong>⚠️ Panel Location Issue:</strong> Electrical panel requires 3-foot clearance per NEC 110.26(A)(1)
+                        </div>
+                        <div class="approval-item">
+                            <strong>✅ Circuit Load Analysis:</strong> All circuits properly sized per NEC 210.19(A)(1)
+                        </div>
+                        <div class="approval-item">
+                            <strong>✅ Grounding System:</strong> Grounding electrodes meet NEC 250.52 requirements
+                        </div>
+                        <div class="violation-item">
+                            <strong>⚠️ GFCI Protection:</strong> Missing GFCI outlets in bathroom per NEC 210.8(A)(1)
+                        </div>
+                    </div>
+                `,
+                'residential': `
+                    <div class="compliance-section">
+                        <h4 style="color: #059669; margin-bottom: 1rem;">🏠 CodeX AI Residential Analysis Complete</h4>
+                        <div class="approval-item">
+                            <strong>✅ Structural Compliance:</strong> All structural elements meet IRC requirements
+                        </div>
+                        <div class="approval-item">
+                            <strong>✅ Fire Safety:</strong> Egress routes comply with IRC R310.2.1
+                        </div>
+                        <div class="violation-item">
+                            <strong>⚠️ Electrical Issue:</strong> Panel location requires 3-foot clearance per NEC 110.26(A)(1)
+                        </div>
+                        <div class="approval-item">
+                            <strong>✅ Plumbing:</strong> All plumbing systems comply with IPC codes
+                        </div>
+                        <div class="approval-item">
+                            <strong>✅ HVAC:</strong> Mechanical systems properly sized per IMC
+                        </div>
+                    </div>
+                `,
+                'commercial': `
+                    <div class="compliance-section">
+                        <h4 style="color: #059669; margin-bottom: 1rem;">🏢 CodeX AI Commercial Analysis Complete</h4>
+                        <div class="approval-item">
+                            <strong>✅ Structural Compliance:</strong> All structural elements meet IBC requirements
+                        </div>
+                        <div class="approval-item">
+                            <strong>✅ Fire Safety:</strong> Fire suppression systems comply with IFC 503.2.1
+                        </div>
+                        <div class="violation-item">
+                            <strong>⚠️ ADA Compliance:</strong> Entrance ramp slope exceeds 1:20 per ADA Standards
+                        </div>
+                        <div class="approval-item">
+                            <strong>✅ Electrical Systems:</strong> Commercial electrical meets NEC requirements
+                        </div>
+                        <div class="violation-item">
+                            <strong>⚠️ Emergency Egress:</strong> Exit corridor width insufficient per IBC 1018.2
+                        </div>
+                    </div>
+                `,
+                'plumbing': `
+                    <div class="compliance-section">
+                        <h4 style="color: #059669; margin-bottom: 1rem;">🔧 CodeX AI Plumbing Analysis Complete</h4>
+                        <div class="approval-item">
+                            <strong>✅ Water Pressure:</strong> Supply pressure meets IPC 604.3 requirements
+                        </div>
+                        <div class="violation-item">
+                            <strong>⚠️ Pipe Sizing:</strong> Hot water line undersized per IPC 604.5
+                        </div>
+                        <div class="approval-item">
+                            <strong>✅ Fixture Placement:</strong> All fixtures properly located per IPC 405
+                        </div>
+                        <div class="approval-item">
+                            <strong>✅ Drainage System:</strong> Drain sizing complies with IPC 710.1
+                        </div>
+                    </div>
+                `,
+                'mechanical': `
+                    <div class="compliance-section">
+                        <h4 style="color: #059669; margin-bottom: 1rem;">🌡️ CodeX AI Mechanical Analysis Complete</h4>
+                        <div class="approval-item">
+                            <strong>✅ Equipment Sizing:</strong> HVAC unit properly sized per IMC 312.1
+                        </div>
+                        <div class="approval-item">
+                            <strong>✅ Ductwork Design:</strong> Duct sizing meets IMC 603.2 requirements
+                        </div>
+                        <div class="violation-item">
+                            <strong>⚠️ Ventilation Rate:</strong> Insufficient outdoor air per IMC 403.3
+                        </div>
+                        <div class="approval-item">
+                            <strong>✅ Equipment Access:</strong> Service clearances meet IMC 306.5
+                        </div>
+                    </div>
+                `
+            };
+
+            return analysisTemplates[permitType] || analysisTemplates['residential'];
+        }
+
+        // Enhanced PDF Sealing Functions with Municipal Seal
         async function generateSealedPDF(caseData, approverName) {
             try {
                 const pdfDoc = await PDFLib.PDFDocument.create();
                 const page = pdfDoc.addPage([612, 792]);
                 
+                // Title
                 page.drawText('APPROVED BUILDING PLANS', {
                     x: 150,
                     y: 700,
@@ -641,7 +938,10 @@
                     color: PDFLib.rgb(0, 0, 0)
                 });
                 
-                page.drawText(`Permit Number: ${caseData.permitNumber}`, {
+                // Final permit number (remove TEMP prefix)
+                const finalPermitNumber = caseData.permitNumber.replace('TEMP-', '');
+                
+                page.drawText(`Permit Number: ${finalPermitNumber}`, {
                     x: 50,
                     y: 650,
                     size: 14,
@@ -662,7 +962,7 @@
                     color: PDFLib.rgb(0, 0, 0)
                 });
                 
-                // Add approval seal
+                // Municipal Red Seal
                 page.drawCircle({
                     x: 450,
                     y: 500,
@@ -679,10 +979,17 @@
                     color: PDFLib.rgb(0.8, 0, 0)
                 });
                 
+                page.drawText('CITY OF HOUSTON', {
+                    x: 400,
+                    y: 490,
+                    size: 10,
+                    color: PDFLib.rgb(0.8, 0, 0)
+                });
+                
                 page.drawText('BUILDING DEPT', {
                     x: 405,
-                    y: 490,
-                    size: 12,
+                    y: 475,
+                    size: 10,
                     color: PDFLib.rgb(0.8, 0, 0)
                 });
                 
@@ -847,6 +1154,12 @@
                     updateData.analysis_result = analysisResult;
                 }
                 
+                // If approving, remove TEMP prefix
+                if (newStatus === 'Approved') {
+                    const finalPermitNumber = permitNumber.replace('TEMP-', '');
+                    updateData.permit_number = finalPermitNumber;
+                }
+                
                 const { data, error } = await supabase
                     .from('cases')
                     .update(updateData)
@@ -887,6 +1200,12 @@
                 localCases[caseIndex].status = newStatus;
                 if (analysisResult) {
                     localCases[caseIndex].analysisResult = analysisResult;
+                }
+                // If approving, remove TEMP prefix
+                if (newStatus === 'Approved') {
+                    const finalPermitNumber = permitNumber.replace('TEMP-', '');
+                    localCases[caseIndex].permitNumber = finalPermitNumber;
+                    localCases[caseIndex].id = finalPermitNumber;
                 }
                 localStorage.setItem('globeCases', JSON.stringify(localCases));
                 cases = localCases;
@@ -998,70 +1317,116 @@
 
         function viewCase(caseId) {
             const caseData = cases.find(c => c.permitNumber === caseId || c.id === caseId);
-            if (caseData) {
-                showTab('caseDetails');
-                const detailsTab = document.getElementById('caseDetailsTab');
-                detailsTab.innerHTML = `
-                    <div class="main-content">
-                        <h2 style="font-size: 24px; color: black;">Case Details: ${caseData.permitNumber || caseData.id}</h2>
-                        <div style="margin: 2rem 0;">
-                            <p style="margin: 0.7rem 0; font-size: 18px;"><strong>Client:</strong> ${caseData.clientName || 'N/A'}</p>
-                            <p style="margin: 0.7rem 0; font-size: 18px;"><strong>Email:</strong> ${caseData.clientEmail || 'N/A'}</p>
-                            <p style="margin: 0.7rem 0; font-size: 18px;"><strong>Phone:</strong> ${caseData.clientPhone || 'N/A'}</p>
-                            <p style="margin: 0.7rem 0; font-size: 18px;"><strong>Address:</strong> ${caseData.address || 'N/A'}</p>
-                            <p style="margin: 0.7rem 0; font-size: 18px;"><strong>Type:</strong> ${caseData.permitType || 'N/A'}</p>
-                            <p style="margin: 0.7rem 0; font-size: 18px;"><strong>Status:</strong> <span class="case-status status-${(caseData.status || 'pending').replace(/\s/g, '').toLowerCase()}">${caseData.status || 'Pending Review'}</span></p>
-                            <p style="margin: 0.7rem 0; font-size: 18px;"><strong>Description:</strong> ${caseData.description || 'No description'}</p>
-                            <p style="margin: 0.7rem 0; font-size: 18px;"><strong>Plan Set:</strong> ${caseData.planSet || 'No file uploaded'}</p>
-                            <p style="margin: 0.7rem 0; font-size: 18px;"><strong>Submission Date:</strong> ${caseData.submissionDate || 'N/A'}</p>
-                        </div>
-                        
-                        ${caseData.analysisResult && caseData.analysisResult !== 'Initial submission received' ? `
+            if (!caseData) {
+                alert('Case not found');
+                return;
+            }
+            
+            currentCaseId = caseId;
+            showTab('caseDetails');
+            
+            const detailsTab = document.getElementById('caseDetailsTab');
+            detailsTab.innerHTML = `
+                <div class="main-content">
+                    <h2 style="font-size: 24px; color: black;">Case Details: ${caseData.permitNumber || caseData.id}</h2>
+                    <div style="margin: 2rem 0;">
+                        <p style="margin: 0.7rem 0; font-size: 18px;"><strong>Client:</strong> ${caseData.clientName || 'N/A'}</p>
+                        <p style="margin: 0.7rem 0; font-size: 18px;"><strong>Email:</strong> ${caseData.clientEmail || 'N/A'}</p>
+                        <p style="margin: 0.7rem 0; font-size: 18px;"><strong>Phone:</strong> ${caseData.clientPhone || 'N/A'}</p>
+                        <p style="margin: 0.7rem 0; font-size: 18px;"><strong>Address:</strong> ${caseData.address || 'N/A'}</p>
+                        <p style="margin: 0.7rem 0; font-size: 18px;"><strong>Type:</strong> ${caseData.permitType || 'N/A'}</p>
+                        <p style="margin: 0.7rem 0; font-size: 18px;"><strong>Status:</strong> <span class="case-status status-${(caseData.status || 'pending').replace(/\s/g, '').toLowerCase()}">${caseData.status || 'Pending Review'}</span></p>
+                        <p style="margin: 0.7rem 0; font-size: 18px;"><strong>Description:</strong> ${caseData.description || 'No description'}</p>
+                        <p style="margin: 0.7rem 0; font-size: 18px;"><strong>Plan Set:</strong> ${caseData.planSet || 'No file uploaded'}</p>
+                        <p style="margin: 0.7rem 0; font-size: 18px;"><strong>Submission Date:</strong> ${caseData.submissionDate || 'N/A'}</p>
+                    </div>
+                    
+                    <div id="analysisContainer">
+                        ${caseData.analysisResult && caseData.analysisResult !== 'Initial submission received' && caseData.analysisResult !== 'Initial submission received and validated. Ready for analysis.' ? `
                             <div class="analysis-result">
                                 <h3 style="color: #0ea5e9; margin-bottom: 1rem; font-size: 20px;">AI Analysis Results</h3>
                                 <div style="font-size: 16px; color: black;">${caseData.analysisResult}</div>
                             </div>
                         ` : ''}
-                        
-                        <div style="margin-top: 2rem;">
-                            <button class="btn btn-analyze" onclick="analyzeCase('${caseData.permitNumber || caseData.id}')">Analyze Case</button>
-                            <button class="btn btn-corrections" onclick="requestCorrections('${caseData.permitNumber || caseData.id}')" style="margin-left: 1rem;">Request Corrections</button>
-                            <button class="btn btn-approve" onclick="approveCase('${caseData.permitNumber || caseData.id}')" style="margin-left: 1rem;">Approve</button>
-                        </div>
                     </div>
-                `;
-            }
+                    
+                    <div style="margin-top: 2rem;">
+                        <button class="btn btn-analyze" id="analyzeBtn" onclick="analyzeCase('${caseData.permitNumber || caseData.id}')" ${analysisInProgress ? 'disabled' : ''}>
+                            ${analysisInProgress ? '<span class="spinner"></span> Analyzing...' : 'Analyze Case'}
+                        </button>
+                        <button class="btn btn-corrections" onclick="requestCorrections('${caseData.permitNumber || caseData.id}')" style="margin-left: 1rem;">Request Corrections</button>
+                        <button class="btn btn-approve" onclick="approveCase('${caseData.permitNumber || caseData.id}')" style="margin-left: 1rem;">Approve</button>
+                    </div>
+                </div>
+            `;
         }
 
         async function analyzeCase(caseId) {
+            if (analysisInProgress) return;
+            
             const caseData = cases.find(c => c.permitNumber === caseId || c.id === caseId);
             if (!caseData) return;
 
-            const analysisResult = `
-                <div class="compliance-section">
-                    <h4 style="color: #059669; margin-bottom: 1rem;">🔍 CodeX AI Analysis Complete</h4>
-                    <div class="approval-item">
-                        <strong>✅ Structural Compliance:</strong> All structural elements meet building code requirements.
+            analysisInProgress = true;
+            
+            // Update button state
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            analyzeBtn.disabled = true;
+            analyzeBtn.innerHTML = '<span class="spinner"></span> Analyzing...';
+            
+            // Show loading animation
+            const analysisContainer = document.getElementById('analysisContainer');
+            analysisContainer.innerHTML = `
+                <div class="analysis-loading">
+                    <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+                        <span class="spinner"></span>
+                        <h3 style="color: #f59e0b; margin-left: 1rem;">CodeX AI Analysis in Progress</h3>
                     </div>
-                    <div class="approval-item">
-                        <strong>✅ Fire Safety:</strong> Egress routes and fire safety systems properly designed.
+                    <div class="analysis-steps" id="analysisSteps">
+                        <div class="analysis-step active" id="step1">🔍 Scanning building plans...</div>
+                        <div class="analysis-step" id="step2">📋 Checking structural compliance...</div>
+                        <div class="analysis-step" id="step3">🔥 Analyzing fire safety systems...</div>
+                        <div class="analysis-step" id="step4">⚡ Reviewing electrical codes...</div>
+                        <div class="analysis-step" id="step5">🔧 Validating plumbing systems...</div>
+                        <div class="analysis-step" id="step6">🌡️ Checking HVAC compliance...</div>
+                        <div class="analysis-step" id="step7">✅ Generating compliance report...</div>
                     </div>
-                    <div class="violation-item">
-                        <strong>⚠️ Electrical Issue:</strong> Panel location requires 3-foot clearance per NEC 110.26.
-                    </div>
-                    <div class="approval-item">
-                        <strong>✅ Plumbing:</strong> All plumbing systems comply with current codes.
-                    </div>
-                    <div class="approval-item">
-                        <strong>✅ HVAC:</strong> Mechanical systems properly sized and located.
+                    <div style="text-align: center; margin-top: 1rem; color: #6b7280;">
+                        Estimated time: 5 minutes • High-precision analysis in progress
                     </div>
                 </div>
-                <p style="margin-top: 1rem; font-style: italic; color: #6b7280;">
-                    Analysis completed by CodeX AI Agent • ${new Date().toLocaleString()}
-                </p>
             `;
 
+            // Simulate 5-minute analysis with step progression
+            const steps = ['step1', 'step2', 'step3', 'step4', 'step5', 'step6', 'step7'];
+            let currentStep = 0;
+
+            const progressAnalysis = () => {
+                if (currentStep > 0) {
+                    document.getElementById(steps[currentStep - 1]).classList.remove('active');
+                }
+                if (currentStep < steps.length) {
+                    document.getElementById(steps[currentStep]).classList.add('active');
+                    currentStep++;
+                    setTimeout(progressAnalysis, 42000); // ~6 seconds per step = 42 seconds total for demo (instead of 5 minutes)
+                } else {
+                    // Analysis complete
+                    completeAnalysis(caseId, caseData.permitType);
+                }
+            };
+
+            setTimeout(progressAnalysis, 6000); // Start first step after 6 seconds
+        }
+
+        async function completeAnalysis(caseId, permitType) {
+            const analysisResult = generatePermitSpecificAnalysis(permitType);
+            
             await updateCaseStatus(caseId, 'Under Review', analysisResult);
+            
+            // Reset analysis state
+            analysisInProgress = false;
+            
+            // Refresh the case view to show results
             viewCase(caseId);
             
             alert('🔍 AI Analysis Complete!\n\nCodeX has analyzed the plans and generated a detailed compliance report. Review the findings above and take appropriate action.');
@@ -1076,17 +1441,20 @@
                     const approverName = currentUser;
                     const sealedPdfBytes = await generateSealedPDF(caseData, approverName);
                     
-                    const fileName = `APPROVED_SEALED_PLANS_${caseData.permitNumber}.pdf`;
+                    // Final permit number (remove TEMP prefix)
+                    const finalPermitNumber = caseData.permitNumber.replace('TEMP-', '');
+                    const fileName = `APPROVED_SEALED_PLANS_${finalPermitNumber}.pdf`;
+                    
                     await downloadSealedPDF(sealedPdfBytes, fileName);
                     
                     await updateCaseStatus(caseId, 'Approved');
                     
-                    const smsMessage = `Case ${caseData.permitNumber} has been APPROVED! Your sealed plans are ready for download in the client portal.`;
+                    const smsMessage = `Case ${finalPermitNumber} has been APPROVED! Your sealed plans are ready for download in the client portal.`;
                     
-                    alert(`✅ Case Approved Successfully!\n\n📋 Sealed plans generated: ${fileName}\n📱 SMS sent to ${caseData.clientPhone}:\n"${smsMessage}"\n\n🔗 Client can download sealed plans from the client portal.`);
+                    alert(`✅ Case Approved Successfully!\n\n📋 Sealed plans generated: ${fileName}\n📱 SMS sent to ${caseData.clientPhone}:\n"${smsMessage}"\n\n🔗 Client can download sealed plans from the client portal.\n\n✅ Permit number updated: ${caseData.permitNumber} → ${finalPermitNumber}`);
                     
                     updateDashboard();
-                    viewCase(caseId);
+                    viewCase(finalPermitNumber); // View with new permit number
                     
                 } catch (error) {
                     console.error('❌ Failed to approve case:', error);
@@ -1096,16 +1464,23 @@
         }
 
         async function requestCorrections(caseId) {
-            const corrections = prompt('Enter specific corrections needed:');
-            if (corrections) {
-                const caseData = cases.find(c => c.permitNumber === caseId || c.id === caseId);
-                if (!caseData) return;
+            const caseData = cases.find(c => c.permitNumber === caseId || c.id === caseId);
+            if (!caseData) return;
 
+            // Check if AI analysis exists
+            if (!caseData.analysisResult || 
+                caseData.analysisResult === 'Initial submission received' || 
+                caseData.analysisResult === 'Initial submission received and validated. Ready for analysis.') {
+                alert('⚠️ Please run AI Analysis first before requesting corrections.\n\nThe AI analysis provides specific code violations and recommendations that will be sent to the client.');
+                return;
+            }
+
+            if (confirm('Are you sure you want to send the AI Analysis Results to the client?\n\nThis will notify them of the specific corrections needed based on the CodeX analysis.')) {
                 await updateCaseStatus(caseId, 'Corrections Needed');
                 
                 const smsMessage = `Case ${caseData.permitNumber} requires corrections. Please check the client portal for details.`;
                 
-                alert(`📝 Correction Request Sent!\n\n📱 SMS sent to ${caseData.clientPhone}:\n"${smsMessage}"\n\n📧 Email sent to ${caseData.clientEmail} with correction details:\n"${corrections}"\n\n🔗 Client will submit revised plans through the client portal.`);
+                alert(`📝 AI Analysis Results Sent to Client!\n\n📱 SMS sent to ${caseData.clientPhone}:\n"${smsMessage}"\n\n📧 Email sent to ${caseData.clientEmail} with detailed correction requirements from CodeX analysis.\n\n🔗 Client will submit revised plans through the client portal.`);
                 
                 updateDashboard();
                 viewCase(caseId);
@@ -1115,9 +1490,9 @@
         // Codex Agent Functions
         let agentIsScanning = false;
         let agentProgress = 0;
-        let agentCitiesScannedCount = 0;
-        let agentCodesFoundCount = 0;
-        let agentViolationsDetectedCount = 0;
+        let agentCitiesScannedCount = 12;
+        let agentCodesFoundCount = 247;
+        let agentViolationsDetectedCount = 891;
 
         function startAgentCodeDiscovery() {
             const cityName = document.getElementById('agentCityName').value;
@@ -1270,6 +1645,36 @@
             }, 2500);
         }
 
+        // Code Management Functions
+        function approveAllCodes() {
+            if (confirm('Approve all pending codes? This will integrate them into the active code database.')) {
+                alert('✅ All pending codes approved and integrated into GLOBE database.');
+                // In real implementation, would move codes from pending to approved
+            }
+        }
+
+        function rejectAllCodes() {
+            if (confirm('Reject all pending codes? This will remove them from the pending list.')) {
+                alert('❌ All pending codes rejected and removed.');
+                // In real implementation, would remove codes from pending list
+            }
+        }
+
+        function addNewCode() {
+            const codeSection = prompt('Enter code section (e.g., NEC 110.26):');
+            const codeDescription = prompt('Enter code description:');
+            
+            if (codeSection && codeDescription) {
+                alert(`✅ New code added:\n\nSection: ${codeSection}\nDescription: ${codeDescription}\n\nCode has been added to the pending approval list.`);
+                // In real implementation, would add to pending codes list
+            }
+        }
+
+        function filterCodes() {
+            // Code filtering functionality would be implemented here
+            console.log('Filtering codes...');
+        }
+
         // Expose functions globally
         window.logout = logout;
         window.showTab = showTab;
@@ -1282,12 +1687,16 @@
         window.exportAgentCodes = exportAgentCodes;
         window.integrateDiscoveredCodes = integrateDiscoveredCodes;
         window.updateAgentNow = updateAgentNow;
+        window.approveAllCodes = approveAllCodes;
+        window.rejectAllCodes = rejectAllCodes;
+        window.addNewCode = addNewCode;
+        window.filterCodes = filterCodes;
         window.saveCase = saveCase;
         
         console.log('✅ GLOBE System Initialized Successfully');
         console.log('🔥 PDF Sealing System Ready');
+        console.log('🤖 AI Analysis System Ready');
         console.log('🚀 All core functionality working');
     </script>
 </body>
 </html>
-                    
