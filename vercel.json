@@ -7,26 +7,26 @@
       "use": "@vercel/static"
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/",
-      "dest": "/index.html"
+      "source": "/",
+      "destination": "/index.html"
     },
     {
-      "src": "/client",
-      "dest": "/new-case.html"
+      "source": "/client",
+      "destination": "/new-case.html"
     },
     {
-      "src": "/apply",
-      "dest": "/new-case.html"
+      "source": "/apply",
+      "destination": "/new-case.html"
     },
     {
-      "src": "/employee",
-      "dest": "/index.html"
+      "source": "/employee",
+      "destination": "/index.html"
     },
     {
-      "src": "/login",
-      "dest": "/index.html"
+      "source": "/login",
+      "destination": "/index.html"
     }
   ],
   "headers": [
@@ -55,9 +55,5 @@
         }
       ]
     }
-  ],
-  "env": {
-    "SUPABASE_URL": "https://itjvhwmqhhmolumajmrh.supabase.co",
-    "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0anZod21xaGhtb2x1bWFqbXJoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTExMjM0NTAsImV4cCI6MjA2NjY5OTQ1MH0.ctj0ZeYLe_wk6ZNGENDtjsriUR5hfHxZUp9K67wW7MU"
-  }
+  ]
 }
