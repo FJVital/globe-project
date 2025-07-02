@@ -1,864 +1,794 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>GLOBE - Client Portal</title>
-  <!-- Fixed Supabase CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #f5f5f5;
-      min-height: 100vh;
-      padding-top: 80px;
-    }
-    .header {
-      background: #003333;
-      color: white;
-      padding: 1rem 0;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      z-index: 1000;
-      height: 80px;
-      display: flex;
-      align-items: center;
-    }
-    .header-inner {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-    }
-    .header-left { display: flex; align-items: center; gap: 1rem; }
-    .header img { height: 40px; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GLOBE - Green Light Operations for Building Efficiency - Client Portal</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding-top: 120px; /* Space for fixed header + sub-header */
+            color: black;
+            font-size: 18px;
+        }
+        .header {
+            background: #003333; /* Dark green */
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            height: 80px; /* Fixed height for consistency */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .sub-header {
+            background: #C8C4B7; /* Complementary beige */
+            position: fixed;
+            top: 80px; /* Below the main header */
+            left: 0;
+            width: 100%;
+            height: 40px; /* Fixed height */
+            z-index: 999;
+        }
+        .header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center; /* Center the image */
+            width: 100%;
+            position: relative;
+        }
+        .container {
+            max-width: 900px;
+            width: 90%;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #003333;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-size: 28px;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+            color: black;
+            font-size: 18px;
+        }
+        input[type="text"],
+        input[type="tel"],
+        input[type="email"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 1.2rem;
+            border: 2px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 18px;
+            color: black;
+        }
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        .drag-drop-area {
+            border: 2px dashed #059669; /* Green dashed border */
+            border-radius: 8px;
+            padding: 3rem;
+            text-align: center;
+            color: #059669; /* Green text */
+            font-size: 20px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            position: relative;
+            overflow: hidden;
+            background: #e6ffee; /* Light green background */
+        }
+        .drag-drop-area:hover {
+            background-color: #d1fae5; /* Lighter green on hover */
+        }
+        .drag-drop-area input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .file-upload-icon {
+            font-size: 3rem; /* Larger icon */
+            margin-bottom: 1rem;
+            display: block;
+        }
+        .file-info {
+            margin-top: 1rem;
+            font-size: 16px;
+            color: #374151;
+        }
+        .file-info.error {
+            color: #dc2626; /* Red for errors */
+        }
+        .btn {
+            padding: 1.2rem 2.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            margin-top: 1.5rem;
+        }
+        .btn-primary {
+            background: #059669; /* Green */
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #047857; /* Darker green */
+        }
+        .status-section {
+            background: #f0f9ff; /* Light blue background */
+            border: 2px solid #0ea5e9; /* Blue border */
+            border-radius: 8px;
+            padding: 2rem;
+            margin-top: 3rem;
+            display: none; /* Hidden by default */
+        }
+        .status-section h2 {
+            color: #0ea5e9;
+            margin-bottom: 1.5rem;
+            font-size: 24px;
+        }
+        .status-item {
+            margin-bottom: 1rem;
+            font-size: 18px;
+            line-height: 1.5;
+        }
+        .status-label {
+            font-weight: 600;
+            color: #374151;
+        }
+        .status-value {
+            color: #1f2937;
+        }
+        .status-icon {
+            margin-right: 0.5rem;
+        }
+        .status-pending { color: #d97706; } /* Orange */
+        .status-underreview { color: #2563eb; } /* Blue */
+        .status-approved { color: #059669; } /* Green */
+        .status-corrections { color: #dc2626; } /* Red */
 
-    .header-right {
-      font-size: 1.8rem;
-      font-weight: 600;
-      text-align: right;
-      white-space: nowrap;
-      color: black;
-    }
-    .header-right img {
-        max-height: 70px;
-        width: auto;
-    }
+        .document-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 1rem;
+        }
+        .document-list li {
+            background: #f9fafb;
+            padding: 0.8rem 1.2rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 16px;
+            color: #374151;
+        }
+        .document-list li:last-child {
+            border-bottom: none;
+        }
+        .document-list a {
+            color: #059669;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .document-list a:hover {
+            text-decoration: underline;
+        }
+        .revision-history {
+            margin-top: 2rem;
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 1.5rem;
+            max-height: 250px;
+            overflow-y: auto;
+            border: 1px solid #e5e7eb;
+        }
+        .revision-history h3 {
+            color: #003333;
+            margin-bottom: 1rem;
+            font-size: 20px;
+        }
+        .revision-entry {
+            margin-bottom: 0.7rem;
+            padding-bottom: 0.7rem;
+            border-bottom: 1px dashed #e0e0e0;
+            font-size: 16px;
+        }
+        .revision-entry:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .revision-entry strong {
+            color: #1f2937;
+        }
+        .analysis-result {
+            background: #f0f9ff; /* Light blue background */
+            border: 2px solid #0ea5e9; /* Blue border */
+            border-radius: 8px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+        .analysis-result h3 {
+            color: #0ea5e9;
+            margin-bottom: 1rem;
+            font-size: 20px;
+        }
+        .analysis-result .violation-item,
+        .analysis-result .approval-item {
+            background: none; /* Override default list item backgrounds */
+            border-left: none; /* Override default list item borders */
+            padding: 0.5rem 0;
+            margin: 0;
+            font-size: 16px;
+            color: #374151;
+        }
+        .analysis-result .violation-item {
+            color: #dc2626; /* Red for violations */
+            font-weight: 500;
+        }
+        .analysis-result .approval-item {
+            color: #059669; /* Green for approvals */
+            font-weight: 500;
+        }
+        
+        .client-portal-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            max-width: 400px;
+            margin: 4rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .client-portal-buttons .btn {
+            margin-top: 0; /* Override default btn margin */
+        }
 
-    .container {
-      max-width: 900px;
-      width: 90%;
-      margin: 2rem auto;
-      padding: 2rem;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
+        .status-lookup-form {
+            display: none; /* Hidden by default */
+            margin-top: 2rem;
+        }
+        .status-lookup-form h2 {
+            margin-bottom: 1.5rem;
+            font-size: 24px;
+            color: #003333;
+            text-align: center;
+        }
+        .hidden { display: none !important; }
 
-    .form-group {
-      margin-bottom: 1.2rem;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 0.7rem;
-      font-weight: 600;
-      color: black;
-      font-size: 18px;
-    }
-
-    input, select, textarea {
-      width: 100%;
-      padding: 1rem;
-      border: 2px solid #d1d5db;
-      border-radius: 6px;
-      font-size: 18px;
-      color: black;
-      background: white;
-    }
-
-    select option {
-      background: white;
-      color: black;
-      padding: 0.5rem;
-    }
-
-    input:focus, select:focus, textarea:focus {
-      outline: none;
-      border-color: #059669;
-      box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
-    }
-
-    .btn {
-      padding: 1rem 2rem;
-      border: none;
-      border-radius: 6px;
-      font-size: 18px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .btn-primary {
-      background: #059669;
-      color: white;
-    }
-
-    .btn-primary:hover {
-      background: #047857;
-    }
-
-    .btn:disabled {
-      background: #9ca3af;
-      cursor: not-allowed;
-    }
-
-    .file-upload {
-      border: 3px dashed #d1d5db;
-      border-radius: 8px;
-      padding: 2.5rem;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .file-upload:hover {
-      border-color: #059669;
-      background: #f0fdf4;
-    }
-
-    .section-separator {
-      border-top: 2px solid #e5e7eb;
-      margin-top: 3rem;
-      padding-top: 2rem;
-      text-align: left;
-    }
-
-    .section-separator h2 {
-      margin-bottom: 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      gap: 1rem;
-      color: black;
-      font-size: 24px;
-    }
-
-    .results-section {
-      margin-top: 2rem;
-      padding-top: 2rem;
-      border-top: 1px solid #e5e7eb;
-      text-align: left;
-    }
-
-    .results-section h3 {
-      margin-bottom: 1.5rem;
-      color: black;
-      font-size: 20px;
-    }
-
-    .documents-list {
-      background: #f9fafb;
-      border-radius: 8px;
-      padding: 1rem;
-      border: 1px solid #e5e7eb;
-      margin-top: 1rem;
-    }
-
-    .documents-list p {
-      margin-bottom: 0.5rem;
-    }
-
-    .documents-list a {
-      color: #059669;
-      text-decoration: none;
-    }
-
-    .documents-list a:hover {
-      text-decoration: underline;
-    }
-
-    .back-to-login {
-      margin-top: 2rem;
-      text-align: center;
-      font-size: 0.9rem;
-    }
-
-    .back-to-login a {
-      color: #6b7280;
-      text-decoration: none;
-    }
-
-    .back-to-login a:hover {
-      text-decoration: underline;
-    }
-
-    .revision-history-container {
-      max-height: 250px;
-      overflow-y: auto;
-      background: #f9fafb;
-      border-radius: 8px;
-      border: 1px solid #e5e7eb;
-      padding: 1rem;
-    }
-
-    .revision-history-item {
-      background: #e0f7fa;
-      border: 1px solid #b2ebf2;
-      border-radius: 8px;
-      padding: 0.75rem;
-      margin-bottom: 0.75rem;
-    }
-
-    .revision-history-item:last-child {
-      margin-bottom: 0;
-    }
-
-    .case-update-box {
-      background: white !important;
-      border: 2pt solid #99FF00 !important;
-      border-radius: 8px;
-      padding: 1.5rem;
-      margin-bottom: 2rem;
-    }
-
-    .status-indicator {
-      position: fixed;
-      top: 80px;
-      left: 0;
-      width: 100%;
-      background-color: #C8C4B7;
-      color: #333333;
-      padding: 8px 0;
-      text-align: center;
-      font-size: 1.1em;
-      font-weight: 500;
-      z-index: 999;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    }
-    .status-indicator.status-connecting {
-        background-color: #C8C4B7;
-        color: #333333;
-    }
-    .status-indicator.status-connected {
-        background-color: #C8C4B7;
-        color: #333333;
-    }
-    .status-indicator.status-disconnected {
-        background-color: #C8C4B7;
-        color: #333333;
-    }
-    .status-indicator.status-local {
-        background-color: #C8C4B7;
-        color: #333333;
-    }
-    .analysis-result {
-        background: #f9fafb;
-        border-radius: 8px;
-        padding: 1.5rem;
-        border: 1px solid #e5e7eb;
-        margin-top: 1rem;
-    }
-    .download-section {
-        background: #d1fae5;
-        border: 2px solid #059669;
-        border-radius: 8px;
-        padding: 2rem;
-        text-align: center;
-        margin-top: 2rem;
-    }
-    .download-btn {
-        background: #059669;
-        color: white;
-        padding: 1rem 2rem;
-        border-radius: 6px;
-        font-size: 20px;
-        font-weight: 600;
-        cursor: pointer;
-        border: none;
-        transition: background 0.2s;
-    }
-    .download-btn:hover {
-        background: #047857;
-    }
-
-    /* Analysis result styles for better formatting */
-    .compliance-section {
-        margin: 1rem 0;
-    }
-    .violation-item {
-        background: #fee2e2;
-        border-left: 4px solid #dc2626;
-        padding: 1rem;
-        margin: 0.5rem 0;
-        border-radius: 0 6px 6px 0;
-    }
-    .approval-item {
-        background: #d1fae5;
-        border-left: 4px solid #059669;
-        padding: 1rem;
-        margin: 0.5rem 0;
-        border-radius: 0 6px 6px 0;
-    }
-
-    @media (max-width: 768px) {
-      .container {
-        padding: 1rem;
-      }
-
-      .header-inner {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .header-right {
-        text-align: left;
-        margin-top: 0.5rem;
-      }
-    }
-  </style>
+    </style>
 </head>
 <body>
-  <div id="dbStatus" class="status-indicator">🟡 Connecting...</div>
-
-  <div class="header">
-    <div class="header-inner">
-      <div class="header-center" style="text-align: center;">
-        <h1 style="color: white; font-size: 2.5rem; margin: 0; font-weight: bold; white-space: nowrap;">
-          GLOBE <span style="font-size: 25px; font-weight: 300;">Green Light Operations for Building Efficiency</span><span style="font-size: 10px; font-weight: 300;">©</span>
-        </h1>
-      </div>
+    <div class="header">
+        <div class="header-inner">
+            <img src="header 2.png" alt="GLOBE Green Light Operations for Building Efficiency" style="height: 60px; max-width: 100%; object-fit: contain;">
+        </div>
     </div>
-  </div>
+    <div class="sub-header"></div>
 
-  <div class="container">
-    <div class="main-content">
-      <h2 style="margin-bottom: 2rem; font-size: 28px; color: black;">Permit Application</h2>
-      <form id="newCaseForm">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-          <div class="form-group">
-            <label for="clientName">Client Name*</label>
-            <input type="text" id="clientName" required />
-          </div>
-          <div class="form-group">
-            <label for="clientPhone">Phone Number*</label>
-            <input type="tel" id="clientPhone" required />
-            <p style="font-size: 14px; color: #6b7280; margin-top: 0.5rem;">
-              This number will only be used to send you SMS notifications about your project status.
-            </p>
-          </div>
+    <div class="container">
+        <div id="clientMainButtons" class="client-portal-buttons">
+            <button class="btn btn-primary" onclick="showNewProjectForm()">New Project</button>
+            <button class="btn btn-primary" onclick="showStatusLookupForm()">Project Status</button>
         </div>
 
-        <div class="form-group">
-          <label for="clientEmail">Email*</label>
-          <input type="email" id="clientEmail" required />
+        <form id="permitApplicationForm" class="hidden">
+            <h1>Permit Application</h1>
+            <div class="form-group">
+                <label for="clientName">Client Name <span style="color: red;">*</span></label>
+                <input type="text" id="clientName" required>
+            </div>
+            <div class="form-group">
+                <label for="phoneNumber">Phone Number (for SMS notifications project updates) <span style="color: red;">*</span></label>
+                <input type="tel" id="phoneNumber" required>
+            </div>
+            <div class="form-group">
+                <label for="emailAddress">Email Address <span style="color: red;">*</span></label>
+                <input type="email" id="emailAddress" required>
+            </div>
+            <div class="form-group">
+                <label for="projectAddress">Project Address <span style="color: red;">*</span></label>
+                <input type="text" id="projectAddress" required>
+            </div>
+            <div class="form-group">
+                <label for="permitType">Permit Type</label>
+                <select id="permitType" required>
+                    <option value="">Select Permit Type</option>
+                    <option value="residential">Residential (full building analysis)</option>
+                    <option value="commercial">Commercial (enhanced with ADA compliance)</option>
+                    <option value="electrical">Electrical (electrical codes only)</option>
+                    <option value="plumbing">Plumbing (plumbing codes only)</option>
+                    <option value="mechanical">Mechanical (HVAC codes only)</option>
+                    <option value="storm">Storm (stormwater management analysis)</option> </select>
+            </div>
+            <div class="form-group">
+                <label for="projectDescription">Project Description (Optional)</label>
+                <textarea id="projectDescription"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="planSetUpload">Upload Building Plans (PDF, max 10MB)</label>
+                <div id="dragDropArea" class="drag-drop-area">
+                    <span class="file-upload-icon">⬆️</span>
+                    <p>Drag & Drop your PDF building plans here</p>
+                    <p>or</p>
+                    <button type="button" onclick="document.getElementById('planSetInput').click()" class="btn btn-primary" style="width: auto; padding: 0.8rem 1.5rem; margin-top: 1rem;">Browse Files</button>
+                    <input type="file" id="planSetInput" accept="application/pdf" required>
+                    <div id="fileInfo" class="file-info">No file chosen</div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Submit Application</button>
+            <button type="button" class="btn btn-secondary" onclick="backToMainClientPage()" style="margin-top: 1rem; background: #6b7280;">Back to Main</button>
+        </form>
+
+        <div id="statusLookupContainer" class="hidden">
+            <div class="status-lookup-form">
+                <h2>Check Permit Status</h2>
+                <div class="form-group">
+                    <label for="lookupPermitNumber">Enter your Permit Number</label>
+                    <input type="text" id="lookupPermitNumber" required>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="lookupPermitStatus()">Check Status</button>
+                <button type="button" class="btn btn-secondary" onclick="backToMainClientPage()" style="margin-top: 1rem; background: #6b7280;">Back to Main</button>
+            </div>
+            
+            <div id="statusSection" class="status-section hidden"> <h2>Permit Status: <span id="currentPermitStatus" class="status-pending"></span></h2>
+                <p style="font-size: 20px; margin-bottom: 1.5rem;">Your permit number: <strong id="displayPermitNumber"></strong></p>
+
+                <div class="status-item">
+                    <span class="status-label">Submission Date:</span> <span id="displaySubmissionDate"></span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Last Update:</span> <span id="displayLastUpdate"></span>
+                </div>
+
+                <div id="aiAnalysisResults" class="analysis-result" style="display: none;">
+                    <h3>AI Analysis Results</h3>
+                    <div id="analysisContent"></div>
+                </div>
+
+                <div class="revision-history">
+                    <h3>Revision History</h3>
+                    <div id="historyContent">
+                        </div>
+                </div>
+
+                <div style="margin-top: 2rem;">
+                    <h3>Case Documents</h3>
+                    <ul id="caseDocumentsList" class="document-list">
+                        </ul>
+                </div>
+                <button type="button" class="btn btn-secondary" onclick="backToMainClientPage()" style="margin-top: 1rem; background: #6b7280;">Back to Main</button>
+            </div>
         </div>
-
-        <div class="form-group">
-          <label for="projectAddress">Project Address*</label>
-          <input type="text" id="projectAddress" required />
-        </div>
-
-        <div class="form-group">
-          <label for="permitType">Permit Type*</label>
-          <select id="permitType" required>
-            <option value="">Select Permit Type</option>
-            <option value="residential">Residential</option>
-            <option value="commercial">Commercial</option>
-            <option value="electrical">Electrical</option>
-            <option value="plumbing">Plumbing</option>
-            <option value="mechanical">Mechanical</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label for="projectDescription">Project Description</label>
-          <textarea id="projectDescription" rows="3"></textarea>
-        </div>
-
-        <div class="form-group">
-          <label for="permitTempNumber">Temporary Permit Number</label>
-          <input type="text" id="permitTempNumber" readonly placeholder="Will be generated on first submission" />
-        </div>
-
-        <div class="form-group">
-          <label for="submissionDate">Submission Date</label>
-          <input type="text" id="submissionDate" readonly placeholder="Auto-generated" />
-        </div>
-
-        <div class="form-group">
-          <label>Upload PDF Plans (Plan Sets)*</label>
-          <div class="file-upload" onclick="document.getElementById('pdfUpload').click()">
-            <input type="file" id="pdfUpload" accept=".pdf" style="display: none;" onchange="handleFileUpload(event)" required />
-            <div style="font-size: 20px; margin-bottom: 1rem;">📄 Click to upload PDF plans or drag & drop</div>
-            <div style="font-size: 16px; color: #6b7280;">Maximum file size: 10MB</div>
-          </div>
-          <div id="uploadedFiles"></div>
-        </div>
-
-        <button type="submit" class="btn btn-primary" id="submitBtn" style="font-size: 20px; padding: 1.2rem 2rem;">Create Case & Submit Plans</button>
-      </form>
-    </div>
-
-    <div class="section-separator">
-      <div class="case-update-box">
-        <p style="font-size: 18px; color: #00796b;">
-          <strong style="font-size: 20px;">Case Update System:</strong><br />
-          When your case is analyzed, you'll receive real-time updates here. Our AI analysis system will review your plans and our staff will either approve them or request specific corrections.<br />
-          You'll receive SMS notifications like: "Case <span id="dynamicPermitNumberForSMS">____</span> has been updated, please check your permit status below."
-        </p>
-      </div>
-
-      <h2>Check Your Permit Status</h2>
-      <div id="searchResults" class="results-section hidden">
-        <h3>Revision History <span style="font-weight: normal; font-size: 16px; color: #6b7280;">(automatically updated)</span></h3>
-        <div id="clientRevisionHistory" class="revision-history-container"></div>
-
-        <div id="analysisResultsSection" class="hidden">
-          <h3 style="margin-top: 2rem; margin-bottom: 1rem;">AI Analysis Results</h3>
-          <div id="clientAnalysisResults" class="analysis-result"></div>
-        </div>
-
-        <div id="approvedDocumentsSection" class="hidden">
-          <div class="download-section">
-            <h3 style="color: #059669; margin-bottom: 1rem; font-size: 24px;">🎉 Your Plans Are Approved!</h3>
-            <p style="font-size: 18px; margin-bottom: 2rem;">Your sealed, approved plans are ready for download:</p>
-            <div id="sealedPlansDownload"></div>
-          </div>
-        </div>
-
-        <h3 style="margin-top: 2rem; margin-bottom: 1rem;">Case Documents</h3>
-        <div id="caseDocumentsDisplay" class="documents-list"></div>
-      </div>
     </div>
 
-    <p class="back-to-login">Are you a city employee? <a href="index.html">Go to Employee Login</a></p>
-  </div>
-
-  <script>
-    // Global variables
-    let supabase = null;
-    let dbConnected = false;
-    let cases = [];
-
-    // Initialize Supabase with robust error handling
-    async function initializeSupabase() {
-      try {
+    <script>
+        // Supabase configuration (ensure this matches your project)
+        // IMPORTANT: Verify your actual SUPABASE_URL and SUPABASE_ANON_KEY from your Supabase project settings
         const SUPABASE_URL = 'https://itjvhwmqhhmolumajmrh.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0anZod21xaGhtb2x1bWFqbXJoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTExMjM0NTAsImV4cCI6MjA2NjY5OTQ1MH0.ctj0ZeYLe_wk6ZNGENDtjsriUR5hfHxZUp9K67wW7MU';
-        
-        updateDbStatus('🟡 Connecting to database...', 'status-connecting');
-        
-        // Wait for Supabase library to load with timeout
-        let attempts = 0;
-        while (typeof window.supabase === 'undefined' && attempts < 50) {
-          await new Promise(resolve => setTimeout(resolve, 100));
-          attempts++;
-        }
-        
-        if (typeof window.supabase === 'undefined') {
-          throw new Error('Supabase library failed to load after 5 seconds');
-        }
-        
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        // Test connection
-        const { data, error } = await supabase.from('cases').select('id').limit(1);
-        
-        if (error && error.code !== 'PGRST116') { // PGRST116 is "table not found" which is OK for initial setup
-          throw error;
-        }
-        
-        dbConnected = true;
-        updateDbStatus('🟢 Database Connected', 'status-connected');
-        console.log('✅ Supabase connected successfully');
-        await loadCases();
-        
-      } catch (error) {
-        console.error('❌ Supabase connection failed:', error);
-        dbConnected = false;
-        updateDbStatus('📁 Using Local Storage', 'status-local');
-        loadCasesFromLocalStorage();
-      }
-    }
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    function updateDbStatus(text, className) {
-      const statusEl = document.getElementById('dbStatus');
-      if (statusEl) {
-        statusEl.textContent = text;
-        statusEl.className = 'status-indicator ' + className;
-      }
-    }
+        let uploadedFile = null;
+        let currentPermitData = null; // Stores the current permit data for tracking
 
-    // Database operations
-    async function saveCase(caseData) {
-      if (!dbConnected || !supabase) {
-        saveCaseToLocalStorage(caseData);
-        return caseData.permitNumber;
-      }
-      
-      try {
-        const { data, error } = await supabase
-          .from('cases')
-          .insert([{
-            permit_number: caseData.permitNumber,
-            client_name: caseData.clientName,
-            client_email: caseData.clientEmail,
-            client_phone: caseData.clientPhone,
-            address: caseData.address,
-            permit_type: caseData.permitType,
-            description: caseData.description,
-            status: caseData.status || 'Pending Review',
-            plan_set_filename: caseData.planSet,
-            analysis_result: caseData.analysisResult || 'Initial submission received',
-            documents: caseData.documents || [],
-            revision_history: caseData.revisionHistory || []
-          }])
-          .select();
-        
-        if (error) throw error;
-        
-        console.log('✅ Case saved to database:', caseData.permitNumber);
-        await loadCases();
-        return caseData.permitNumber;
-        
-      } catch (error) {
-        console.error('❌ Failed to save case to database:', error);
-        saveCaseToLocalStorage(caseData);
-        return caseData.permitNumber;
-      }
-    }
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('permitApplicationForm');
+            const dragDropArea = document.getElementById('dragDropArea');
+            const planSetInput = document.getElementById('planSetInput');
+            const fileInfo = document.getElementById('fileInfo');
 
-    async function loadCases() {
-      if (!dbConnected || !supabase) {
-        loadCasesFromLocalStorage();
-        return;
-      }
-      
-      try {
-        const { data, error } = await supabase
-          .from('cases')
-          .select('*')
-          .order('created_at', { ascending: false });
-        
-        if (error) throw error;
-        
-        cases = data.map(row => ({
-          id: row.permit_number,
-          permitNumber: row.permit_number,
-          clientName: row.client_name,
-          clientEmail: row.client_email,
-          clientPhone: row.client_phone,
-          address: row.address,
-          permitType: row.permit_type,
-          description: row.description,
-          status: row.status,
-          submissionDate: new Date(row.created_at).toLocaleDateString(),
-          planSet: row.plan_set_filename,
-          analysisResult: row.analysis_result,
-          documents: row.documents || [],
-          revisionHistory: row.revision_history || []
-        }));
-        
-        console.log(`✅ Loaded ${cases.length} cases from database`);
-        
-      } catch (error) {
-        console.error('❌ Failed to load cases from database:', error);
-        loadCasesFromLocalStorage();
-      }
-    }
+            // Drag & Drop functionality
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dragDropArea.addEventListener(eventName, preventDefaults, false);
+                document.body.addEventListener(eventName, preventDefaults, false); // Prevent default for whole body
+            });
 
-    // LocalStorage fallback functions
-    function saveCaseToLocalStorage(caseData) {
-      const localCases = JSON.parse(localStorage.getItem('globeCases')) || [];
-      const filteredCases = localCases.filter(c => c.permitNumber !== caseData.permitNumber);
-      filteredCases.push(caseData);
-      localStorage.setItem('globeCases', JSON.stringify(filteredCases));
-      cases = filteredCases;
-      console.log('📁 Case saved/updated in localStorage');
-    }
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dragDropArea.addEventListener(eventName, () => dragDropArea.classList.add('highlight'), false);
+            });
 
-    function loadCasesFromLocalStorage() {
-      cases = JSON.parse(localStorage.getItem('globeCases')) || [];
-      console.log(`📁 Loaded ${cases.length} cases from localStorage`);
-    }
+            ['dragleave', 'drop'].forEach(eventName => {
+                dragDropArea.addEventListener(eventName, () => dragDropArea.classList.remove('highlight'), false);
+            });
 
-    function generateTempPermitNumber() {
-      const now = new Date();
-      const year = String(now.getFullYear()).slice(-2);
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const uniqueId = String((cases.length || 0) + 1).padStart(4, '0'); 
-      return `TEMP-${year}${month}-${uniqueId}`;
-    }
+            dragDropArea.addEventListener('drop', handleDrop, false);
+            planSetInput.addEventListener('change', handleFileSelect, false);
 
-    // Initialize on DOM load
-    document.addEventListener('DOMContentLoaded', async function() {
-      console.log('🚀 Client Portal initializing...');
-      
-      await initializeSupabase();
+            form.addEventListener('submit', handleSubmit);
 
-      // Form submission handler
-      document.getElementById('newCaseForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
+            // Auto-refresh status every 30 seconds for displayed status
+            setInterval(() => {
+                // Only refresh if the status section is actually visible AND we have current permit data loaded
+                if (!document.getElementById('statusSection').classList.contains('hidden') && currentPermitData && (currentPermitData.permit_number || currentPermitData.id)) {
+                    fetchAndUpdatePermitStatus(currentPermitData.permit_number || currentPermitData.id);
+                }
+            }, 30000); // 30 seconds
 
-        const submitBtn = document.getElementById('submitBtn');
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Submitting...';
-
-        if (!document.getElementById('pdfUpload').files.length) {
-          alert('Please attach PDF Plans before submitting the application.');
-          submitBtn.disabled = false;
-          submitBtn.textContent = 'Create Case & Submit Plans';
-          return;
-        }
-
-        const clientName = document.getElementById('clientName').value;
-        const clientPhone = document.getElementById('clientPhone').value;
-        const clientEmail = document.getElementById('clientEmail').value;
-        const projectAddress = document.getElementById('projectAddress').value;
-        const permitType = document.getElementById('permitType').value;
-        const projectDescription = document.getElementById('projectDescription').value;
-        const submissionDate = new Date().toLocaleDateString('en-US');
-        let permitTempNumber = document.getElementById('permitTempNumber').value;
-
-        if (!permitTempNumber || permitTempNumber.startsWith('Will be')) {
-          permitTempNumber = generateTempPermitNumber();
-        }
-
-        const newCase = {
-          permitNumber: permitTempNumber,
-          clientName,
-          clientPhone,
-          clientEmail,
-          address: projectAddress,
-          permitType,
-          description: projectDescription,
-          status: 'Pending Review',
-          submissionDate,
-          planSet: document.getElementById('pdfUpload').files[0]?.name || 'No file',
-          analysisResult: 'Initial submission received and validated. Ready for analysis.',
-          documents: [],
-          revisionHistory: []
-        };
-
-        const initialReceipt = `Initial_Submission_Receipt_${permitTempNumber}.pdf`;
-        newCase.documents.push(initialReceipt);
-        if (document.getElementById('pdfUpload').files[0]) {
-          newCase.documents.push(document.getElementById('pdfUpload').files[0].name);
-        }
-
-        // Create proper revision history for the specific case
-        newCase.revisionHistory.push({
-          revisionNumber: `Rev. 1`,
-          date: submissionDate,
-          documentsIssued: [initialReceipt, newCase.planSet],
-          action: 'Initial Submission',
-          initiatedBy: 'client',
-          status: 'submitted',
-          permitNumber: permitTempNumber // Link to specific permit
+            // Check URL for existing permit number to pre-load status
+            const urlParams = new URLSearchParams(window.location.search);
+            const permitNumberFromURL = urlParams.get('permit');
+            if (permitNumberFromURL) {
+                document.getElementById('clientMainButtons').classList.add('hidden');
+                document.getElementById('statusLookupContainer').classList.remove('hidden');
+                document.getElementById('lookupPermitNumber').value = permitNumberFromURL; // Pre-fill
+                lookupPermitStatus(); // Directly lookup status
+            }
         });
 
-        newCase.revisionHistory.push({
-          revisionNumber: `Rev. 2`,
-          date: '—',
-          documentsIssued: [],
-          action: 'Pending Review',
-          initiatedBy: 'staff',
-          status: 'standby',
-          permitNumber: permitTempNumber // Link to specific permit
-        });
-
-        try {
-          await saveCase(newCase);
-
-          // Clear file input
-          document.getElementById('pdfUpload').value = '';
-          document.getElementById('uploadedFiles').innerHTML = '';
-          document.getElementById('permitTempNumber').value = permitTempNumber;
-          document.getElementById('submissionDate').value = submissionDate;
-
-          const message = `We received your application (${permitTempNumber}) and will process it shortly.`;
-          alert(`✅ Application submitted successfully!\n\nTemporary Permit Number: ${permitTempNumber}\n\n📱 SMS Notification sent to: ${clientPhone}\n📧 Email confirmation sent to: ${clientEmail}\n\nMessage: "${message}"\n\nYou can check your status below.`);
-
-          renderConsultStatusSection(permitTempNumber);
-          document.getElementById('searchResults').classList.remove('hidden');
-          document.getElementById('searchResults').scrollIntoView({ behavior: 'smooth' });
-
-        } catch (error) {
-          console.error('❌ Failed to submit case:', error);
-          alert('❌ Failed to submit application. Please try again.');
-        } finally {
-          submitBtn.disabled = false;
-          submitBtn.textContent = 'Create Case & Submit Plans';
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
         }
-      });
 
-      // File upload handlers
-      const dropArea = document.querySelector('.file-upload');
-
-      dropArea.addEventListener('dragover', e => {
-        e.preventDefault();
-        dropArea.style.borderColor = '#059669';
-        dropArea.style.backgroundColor = '#f0fdf4';
-      });
-
-      dropArea.addEventListener('dragleave', e => {
-        e.preventDefault();
-        dropArea.style.borderColor = '#d1d5db';
-        dropArea.style.backgroundColor = '';
-      });
-
-      dropArea.addEventListener('drop', e => {
-        e.preventDefault();
-        dropArea.style.borderColor = '#d1d5db';
-        dropArea.style.backgroundColor = '';
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-          document.getElementById('pdfUpload').files = files;
-          handleFileUpload({ target: { files } });
+        function handleFileSelect(event) {
+            const files = event.target.files;
+            if (files.length > 0) {
+                validateAndSetFile(files[0]);
+            }
         }
-      });
 
-      // Auto-show last case if exists
-      if (cases.length > 0) {
-        const lastCase = cases[cases.length - 1];
-        renderConsultStatusSection(lastCase.permitNumber);
-      }
-
-      // Auto-refresh case status every 30 seconds
-      setInterval(async () => {
-        if (cases.length > 0) {
-          await loadCases();
-          const currentCase = cases[cases.length - 1]; 
-          if (currentCase) {
-            renderConsultStatusSection(currentCase.permitNumber);
-          }
+        function handleDrop(event) {
+            const dt = event.dataTransfer;
+            const files = dt.files;
+            if (files.length > 0) {
+                validateAndSetFile(files[0]);
+            }
         }
-      }, 30000);
-    });
 
-    function handleFileUpload(event) {
-      const file = event.target.files[0];
-      if (file && file.type === 'application/pdf') {
-        document.getElementById('uploadedFiles').innerHTML = `
-          <div style="margin-top: 1.5rem; padding: 1rem; background: #f0f9ff; border-radius: 8px; border: 2px solid #0ea5e9;">
-            📄 <strong>${file.name}</strong> (${(file.size / 1024 / 1024).toFixed(2)} MB)
-          </div>`;
-      } else {
-        alert('Please select a valid PDF file.');
-        event.target.value = '';
-        document.getElementById('uploadedFiles').innerHTML = '';
-      }
-    }
+        function validateAndSetFile(file) {
+            if (file.type !== 'application/pdf') {
+                fileInfo.textContent = 'Error: Only PDF files are allowed.';
+                fileInfo.classList.add('error');
+                uploadedFile = null;
+                planSetInput.value = ''; // Clear file input
+                return;
+            }
+            if (file.size > 10 * 1024 * 1024) { // 10MB limit
+                fileInfo.textContent = 'Error: File size exceeds 10MB limit.';
+                fileInfo.classList.add('error');
+                uploadedFile = null;
+                planSetInput.value = ''; // Clear file input
+                return;
+            }
 
-    function renderConsultStatusSection(permitNumberToDisplay) {
-      const searchResultsDiv = document.getElementById('searchResults');
-      const clientRevisionHistory = document.getElementById('clientRevisionHistory');
-      const caseDocumentsDisplay = document.getElementById('caseDocumentsDisplay');
-      const analysisResultsSection = document.getElementById('analysisResultsSection');
-      const clientAnalysisResults = document.getElementById('clientAnalysisResults');
-      const approvedDocumentsSection = document.getElementById('approvedDocumentsSection');
-      const sealedPlansDownload = document.getElementById('sealedPlansDownload');
-
-      document.getElementById('dynamicPermitNumberForSMS').textContent = permitNumberToDisplay;
-
-      // Find the specific case by permit number
-      const foundCase = cases.find(c => c.permitNumber === permitNumberToDisplay || c.id === permitNumberToDisplay);
-
-      if (!foundCase) {
-        clientRevisionHistory.innerHTML = '<p style="color: #6b7280;">No case found with this permit number.</p>';
-        caseDocumentsDisplay.innerHTML = '<p style="color: #6b7280;">No documents available.</p>';
-        return;
-      }
-
-      // Render revision history (filtered for this specific case)
-      if (foundCase.revisionHistory && foundCase.revisionHistory.length > 0) {
-        // Filter revision history to only show entries for this specific permit
-        const caseSpecificHistory = foundCase.revisionHistory.filter(revision => 
-          !revision.permitNumber || revision.permitNumber === permitNumberToDisplay
-        );
-
-        if (caseSpecificHistory.length > 0) {
-          clientRevisionHistory.innerHTML = caseSpecificHistory.map(revision => `
-            <div class="revision-history-item">
-              <strong>${revision.revisionNumber}</strong> - ${revision.action}<br>
-              <small style="color: #6b7280;">Date: ${revision.date} | Initiated by: ${revision.initiatedBy}</small><br>
-              ${revision.documentsIssued && revision.documentsIssued.length > 0 ? 
-                `<small>Documents: ${revision.documentsIssued.join(', ')}</small>` : 
-                '<small>No documents issued</small>'
-              }
-            </div>
-          `).join('');
-        } else {
-          clientRevisionHistory.innerHTML = '<p style="color: #6b7280;">No revision history available for this case.</p>';
+            uploadedFile = file;
+            fileInfo.textContent = `File selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+            fileInfo.classList.remove('error');
         }
-      } else {
-        clientRevisionHistory.innerHTML = '<p style="color: #6b7280;">No revision history available.</p>';
-      }
 
-      // Show analysis results if available and not initial message
-      if (foundCase.analysisResult && 
-          foundCase.analysisResult !== 'Initial submission received' && 
-          foundCase.analysisResult !== 'Initial submission received and validated. Ready for analysis.') {
-        analysisResultsSection.classList.remove('hidden');
-        clientAnalysisResults.innerHTML = foundCase.analysisResult;
-      } else {
-        analysisResultsSection.classList.add('hidden');
-      }
+        async function handleSubmit(event) {
+            event.preventDefault();
 
-      // Show approved documents section if case is approved
-      if (foundCase.status === 'Approved') {
-        approvedDocumentsSection.classList.remove('hidden');
-        // Remove TEMP prefix for display
-        const finalPermitNumber = foundCase.permitNumber.replace('TEMP-', '');
-        sealedPlansDownload.innerHTML = `
-          <button class="download-btn" onclick="downloadSealedPlans('${finalPermitNumber}')">
-            📋 Download Sealed Plans
-          </button>
-          <p style="margin-top: 1rem; font-size: 16px; color: #059669;">
-            File: APPROVED_SEALED_PLANS_${finalPermitNumber}.pdf
-          </p>
-          <p style="margin-top: 0.5rem; font-size: 14px; color: #6b7280;">
-            Final Permit Number: ${finalPermitNumber}
-          </p>
-        `;
-      } else {
-        approvedDocumentsSection.classList.add('hidden');
-      }
+            if (!uploadedFile) {
+                alert('Please upload your building plans (PDF) before submitting.');
+                return;
+            }
 
-      // Render case documents (filtered for this specific case)
-      if (foundCase.documents && foundCase.documents.length > 0) {
-        caseDocumentsDisplay.innerHTML = foundCase.documents.map(doc => `
-          <p>📄 <a href="#" onclick="alert('Document download: ${doc}')">${doc}</a></p>
-        `).join('');
-      } else {
-        caseDocumentsDisplay.innerHTML = '<p style="color: #6b7280;">No documents available.</p>';
-      }
+            const clientName = document.getElementById('clientName').value;
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            const emailAddress = document.getElementById('emailAddress').value;
+            const projectAddress = document.getElementById('projectAddress').value;
+            const permitType = document.getElementById('permitType').value;
+            const projectDescription = document.getElementById('projectDescription').value;
 
-      searchResultsDiv.classList.remove('hidden');
-    }
+            // Generate temporary permit number
+            const date = new Date();
+            const yy = String(date.getFullYear()).slice(-2);
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const uniqueId = await generateUniquePermitNumber(yy, mm); // Uses Supabase to ensure uniqueness
 
-    function downloadSealedPlans(permitNumber) {
-      // Simulate sealed plans download
-      alert(`🎉 Downloading sealed plans for permit ${permitNumber}!\n\nFile: APPROVED_SEALED_PLANS_${permitNumber}.pdf\n\nThese are your official, sealed building plans approved by the municipal building department.\n\n✅ Your permit is now active and construction may begin!`);
-    }
+            const permitNumber = `TEMP-${yy}${mm}-${uniqueId}`;
 
-    // Expose functions globally
-    window.handleFileUpload = handleFileUpload;
-    window.renderConsultStatusSection = renderConsultStatusSection;
-    window.downloadSealedPlans = downloadSealedPlans;
-    
-    console.log('✅ Client Portal Initialized Successfully');
-    console.log('🔗 Database integration ready');
-    console.log('🎯 Case isolation system active');
-  </script>
+            // Initial documents for the case
+            const initialDocuments = [
+                `Initial_Submission_Receipt_${permitNumber}.pdf`,
+                uploadedFile.name
+            ];
+
+            // Initial revision history for the case
+            const initialRevisionHistory = [{
+                rev: 'Rev. 1',
+                description: 'Initial Submission (complete)',
+                date: new Date().toISOString(),
+                initiated_by: 'client',
+                documents: initialDocuments // Link documents to this revision
+            }, {
+                rev: 'Rev. 2',
+                description: 'Pending Review (standby)',
+                date: new Date().toISOString(),
+                initiated_by: 'system',
+                documents: []
+            }];
+
+            const newPermit = {
+                permitNumber: permitNumber,
+                clientName: clientName,
+                clientPhone: phoneNumber,
+                clientEmail: emailAddress,
+                projectAddress: projectAddress,
+                permitType: permitType,
+                projectDescription: projectDescription,
+                planSet: uploadedFile.name, // Store filename
+                status: 'Pending Review',
+                submissionDate: date.toLocaleDateString(),
+                analysisResult: 'Initial submission received and validated. Ready for analysis.',
+                documents: initialDocuments, // All documents associated with the case
+                revisionHistory: initialRevisionHistory // Full revision history
+            };
+
+            try {
+                const { data, error } = await supabase
+                    .from('cases')
+                    .insert([
+                        {
+                            permit_number: newPermit.permitNumber,
+                            client_name: newPermit.clientName,
+                            client_email: newPermit.clientEmail,
+                            client_phone: newPermit.clientPhone,
+                            address: newPermit.projectAddress,
+                            permit_type: newPermit.permitType,
+                            description: newPermit.projectDescription,
+                            status: newPermit.status,
+                            plan_set_filename: newPermit.planSet,
+                            analysis_result: newPermit.analysisResult,
+                            documents: newPermit.documents,
+                            revision_history: newPermit.revisionHistory,
+                            created_at: new Date().toISOString(), // Use current timestamp
+                            updated_at: new Date().toISOString() // Use current timestamp
+                        }
+                    ])
+                    .select(); // Add .select() to ensure returned data includes the inserted row
+
+                if (error) throw error;
+
+                // **FIXED: Check if data is returned before accessing data[0]**
+                if (data && data.length > 0) {
+                    currentPermitData = data[0]; // Store the actual data returned by Supabase
+                } else {
+                    // Fallback if insert somehow doesn't return data (unlikely with .select())
+                    console.warn("Supabase insert succeeded but returned no data. Using local permit data as currentPermitData.");
+                    currentPermitData = newPermit; // Use the locally constructed newPermit object
+                }
+                
+                // Simulate file upload to Supabase Storage (conceptual, requires actual Supabase Storage integration)
+                // In a real app, you would upload `uploadedFile` here using Supabase Storage client
+                // const { data: uploadData, error: uploadError } = await supabase.storage
+                //     .from('permit-plans') // Your storage bucket name
+                //     .upload(`${permitNumber}/${uploadedFile.name}`, uploadedFile);
+                // if (uploadError) console.error('File upload failed (simulated):', uploadError);
+
+
+                displayConfirmationAndStatus(currentPermitData);
+
+                // Simulate SMS and email notifications
+                console.log(`SMS sent to ${phoneNumber}: Application received (${newPermit.permitNumber}).`);
+                console.log(`Email sent to ${emailAddress} for application ${newPermit.permitNumber}.`);
+
+                alert(`Application Submitted! Your temporary permit number is: ${newPermit.permitNumber}`);
+
+            } catch (error) {
+                console.error('Error submitting application:', error);
+                alert('Failed to submit application. Please try again: ' + error.message);
+            }
+        }
+
+        async function generateUniquePermitNumber(yy, mm) {
+            // Fetch the count of existing permits for the current month/year
+            const prefix = `TEMP-${yy}${mm}-`;
+            let count = 0;
+            try {
+                const { data, error } = await supabase
+                    .from('cases')
+                    .select('permit_number')
+                    .like('permit_number', `${prefix}%`);
+
+                if (error) throw error;
+
+                // Extract numerical parts, convert to int, find max
+                const existingNumbers = data.map(row => {
+                    const numPart = row.permit_number.split('-').pop();
+                    return parseInt(numPart);
+                }).filter(num => !isNaN(num)); // Filter out any non-numeric results
+
+                if (existingNumbers.length > 0) {
+                    count = Math.max(...existingNumbers) + 1;
+                } else {
+                    count = 1;
+                }
+            } catch (error) {
+                console.error('Error generating unique permit number from DB:', error);
+                // Fallback to a simple timestamp if DB query fails or table is empty
+                count = Math.floor(Math.random() * 9000) + 1000; // Random 4-digit number
+            }
+            return String(count).padStart(4, '0');
+        }
+
+        // Functions to switch between views
+        function showNewProjectForm() {
+            document.getElementById('clientMainButtons').classList.add('hidden');
+            document.getElementById('statusLookupContainer').classList.add('hidden');
+            document.getElementById('permitApplicationForm').classList.remove('hidden');
+            document.getElementById('statusSection').classList.add('hidden'); // Ensure status section is hidden on new form
+            document.getElementById('permitApplicationForm').reset(); // Clear form
+            uploadedFile = null; // Clear uploaded file
+            document.getElementById('fileInfo').textContent = 'No file chosen'; // Reset file info
+            document.getElementById('fileInfo').classList.remove('error');
+        }
+
+        function showStatusLookupForm() {
+            document.getElementById('clientMainButtons').classList.add('hidden');
+            document.getElementById('permitApplicationForm').classList.add('hidden');
+            document.getElementById('statusLookupContainer').classList.remove('hidden');
+            document.getElementById('statusSection').classList.add('hidden'); // Ensure status section is hidden initially
+            document.getElementById('lookupPermitNumber').value = ''; // Clear previous lookup
+            currentPermitData = null; // Clear previous permit data
+        }
+
+        function backToMainClientPage() {
+            document.getElementById('permitApplicationForm').classList.add('hidden');
+            document.getElementById('statusLookupContainer').classList.add('hidden');
+            document.getElementById('statusSection').classList.add('hidden'); // Hide status details
+            document.getElementById('clientMainButtons').classList.remove('hidden');
+            currentPermitData = null; // Clear any loaded permit data
+            // Optionally clear the lookup field: document.getElementById('lookupPermitNumber').value = '';
+        }
+
+        async function lookupPermitStatus() {
+            const permitNumber = document.getElementById('lookupPermitNumber').value.trim();
+            if (!permitNumber) {
+                alert('Please enter a permit number.');
+                // Ensure status section is cleared and hidden if no permit number
+                document.getElementById('statusSection').classList.add('hidden');
+                return;
+            }
+
+            try {
+                document.getElementById('statusSection').classList.add('hidden'); // Hide old status before new lookup
+                const { data, error } = await supabase
+                    .from('cases')
+                    .select('*')
+                    .eq('permit_number', permitNumber)
+                    .single();
+
+                if (error && error.code === 'PGRST116') { // No rows found
+                    alert(`Permit number "${permitNumber}" not found. Please check and try again.`);
+                    currentPermitData = null;
+                    return;
+                }
+                if (error) throw error;
+
+                currentPermitData = data; // Store the fetched data
+                displayConfirmationAndStatus(data); // Re-using this function for display
+
+            } catch (error) {
+                console.error('Error fetching permit status:', error);
+                alert('Failed to fetch permit status. Please try again later.');
+                currentPermitData = null;
+            }
+        }
+
+
+        function displayConfirmationAndStatus(permit) {
+            // This function is now used both after submission and for status lookup
+            const statusSection = document.getElementById('statusSection');
+            statusSection.classList.remove('hidden'); // Make sure it's visible after data is ready
+
+            document.getElementById('currentPermitStatus').textContent = permit.status;
+            document.getElementById('currentPermitStatus').className = `status-value status-${permit.status.replace(/\s/g, '').toLowerCase()}`;
+            document.getElementById('displayPermitNumber').textContent = permit.permit_number;
+            document.getElementById('displaySubmissionDate').textContent = new Date(permit.created_at).toLocaleDateString();
+            document.getElementById('displayLastUpdate').textContent = new Date(permit.updated_at).toLocaleDateString() + ' ' + new Date(permit.updated_at).toLocaleTimeString();
+
+
+            // Display AI analysis results if available and relevant
+            const aiAnalysisResultsDiv = document.getElementById('aiAnalysisResults');
+            const analysisContentDiv = document.getElementById('analysisContent');
+            if (permit.analysis_result && permit.analysis_result !== 'Initial submission received' && permit.analysis_result !== 'Initial submission received and validated. Ready for analysis.') {
+                analysisContentDiv.innerHTML = permit.analysis_result;
+                aiAnalysisResultsDiv.style.display = 'block';
+            } else {
+                aiAnalysisResultsDiv.style.display = 'none';
+            }
+
+            // Update Revision History
+            const historyContentDiv = document.getElementById('historyContent');
+            historyContentDiv.innerHTML = '';
+            if (permit.revision_history && permit.revision_history.length > 0) {
+                permit.revision_history.forEach(rev => {
+                    const revEntry = document.createElement('div');
+                    revEntry.className = 'revision-entry';
+                    revEntry.innerHTML = `
+                        <strong>${rev.rev || `Rev. ${permit.revision_history.indexOf(rev) + 1}`} - ${rev.description}</strong><br>
+                        Date: ${new Date(rev.date).toLocaleDateString()} | Initiated by: ${rev.initiated_by}<br>
+                        Documents: ${rev.documents && rev.documents.length > 0 ? rev.documents.join(', ') : 'No documents issued'}
+                    `;
+                    historyContentDiv.appendChild(revEntry);
+                });
+            } else {
+                historyContentDiv.innerHTML = '<p style="color: #6b7280;">No revision history yet.</p>';
+            }
+
+            // Update Case Documents List
+            const caseDocumentsList = document.getElementById('caseDocumentsList');
+            caseDocumentsList.innerHTML = '';
+            if (permit.documents && permit.documents.length > 0) {
+                permit.documents.forEach(docName => {
+                    const li = document.createElement('li');
+                    let downloadLink = `javascript:void(0);`; // Default no-op for conceptual downloads
+
+                    // Improve logic for displaying and linking documents based on their type/name
+                    if (docName.includes('APPROVED_SEALED_PLANS_')) {
+                        li.innerHTML = `
+                            <span>${docName}</span>
+                            <a href="javascript:alert('Simulating download for: ${docName}. In a real system, this would be a direct file download.')" target="_blank">Download Sealed Plans</a>
+                        `;
+                    } else if (docName.includes('Initial_Submission_Receipt_')) {
+                        li.innerHTML = `
+                            <span>${docName}</span>
+                            <a href="javascript:alert('Simulating download for: ${docName}. In a real system, this would be a direct file download.')" target="_blank">Download Receipt</a>
+                        `;
+                    } else if (docName.includes('AI_Analysis_Report_')) {
+                         li.innerHTML = `
+                            <span>${docName}</span>
+                            <a href="javascript:alert('Simulating download for: ${docName}. In a real system, this would be a direct file download.')" target="_blank">Download AI Report</a>
+                        `;
+                    } else if (docName.includes('Correction_Letter_')) {
+                         li.innerHTML = `
+                            <span>${docName}</span>
+                            <a href="javascript:alert('Simulating download for: ${docName}. In a real system, this would be a direct file download.')" target="_blank">Download Corrections</a>
+                        `;
+                    }
+                    else {
+                        // For uploaded plans or other generic documents
+                        li.innerHTML = `
+                            <span>${docName}</span>
+                            <a href="javascript:alert('Simulating download for: ${docName}. In a real system, this would be a direct file download.')" target="_blank">Download</a>
+                        `;
+                    }
+                    caseDocumentsList.appendChild(li);
+                });
+            } else {
+                caseDocumentsList.innerHTML = '<li>No documents available yet.</li>';
+            }
+        }
+    </script>
 </body>
 </html>
