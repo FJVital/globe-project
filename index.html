@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GLOBE - Green Light Operations for Building Efficiency</title>
-    <!-- Fixed Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <style>
@@ -18,7 +17,7 @@
             color: black;
         }
         .header {
-            background: #003333;
+            background: #003333; 
             color: white; 
             padding: 1rem 0;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
@@ -337,8 +336,8 @@
 
         /* Analysis Loading Styles */
         .analysis-loading {
-            background: #fef3c7;
-            border: 2px solid #f59e0b;
+            background: #f0f0f0; /* Changed from yellow to light gray */
+            border: 2px solid #cccccc;
             border-radius: 8px;
             padding: 2rem;
             margin: 2rem 0;
@@ -350,7 +349,7 @@
             height: 40px;
             border: 4px solid #f3f4f6;
             border-radius: 50%;
-            border-top-color: #f59e0b;
+            border-top-color: #059669; /* Changed spinner color to green */
             animation: spin 1s ease-in-out infinite;
             margin-right: 1rem;
         }
@@ -367,7 +366,13 @@
             color: #374151;
         }
         .analysis-step.active {
-            color: #f59e0b;
+            color: #059669; /* Changed active step color to green */
+            font-weight: 600;
+        }
+        .analysis-countdown {
+            margin-top: 1rem;
+            font-size: 18px;
+            color: #059669;
             font-weight: 600;
         }
 
@@ -448,18 +453,12 @@
     </style>
 </head>
 <body>
-    <!-- Database Status -->
     <div id="dbStatus">🟡 Connecting...</div>
 
-    <!-- Login Screen -->
     <div id="loginScreen">
         <div class="header">
             <div class="header-inner">
-                <div class="header-title">
-                    <span class="globe-text">GLOBE</span>
-                    <span class="subtitle-text">Green Light Operations for Building Efficiency</span>
-                    <span class="copyright-text">©</span>
-                </div>
+                <img src="header 2.png" alt="GLOBE Green Light Operations for Building Efficiency" style="height: 60px; max-width: 100%; object-fit: contain;">
             </div>
         </div>
         <div class="sub-header"></div>
@@ -494,18 +493,13 @@
         </div>
     </div>
 
-    <!-- Main Application -->
     <div id="mainApp" class="hidden">
         <div class="header">
             <div class="header-inner">
-                <div class="header-title">
-                    <span class="globe-text">GLOBE</span>
-                    <span class="subtitle-text">Green Light Operations for Building Efficiency</span>
-                    <span class="copyright-text">©</span>
-                </div>
+                <img src="header 2.png" alt="GLOBE Green Light Operations for Building Efficiency" style="height: 60px; max-width: 100%; object-fit: contain;">
+                
                 <div class="user-info">
-                    <span id="currentUser" style="color: white; font-size: 18px; font-weight: 600;"></span>
-                    <button class="logout-btn" onclick="logout()">Logout</button>
+                    <span id="currentUser" style="color: white; font-size: 18px; font-weight: 600; display: none;"></span> <button class="logout-btn" onclick="logout()">Logout</button>
                 </div>
             </div>
         </div>
@@ -533,18 +527,17 @@
                 <div class="tab" onclick="showTab('codeManagement')">Code Management</div>
             </div>
 
-            <!-- Global Stats Bar -->
             <div class="global-stats-bar">
                 <div class="global-stat-item">
-                    <div class="global-stat-number" id="agentCitiesScanned">12</div>
+                    <div class="global-stat-number" id="agentCitiesScanned">0</div>
                     <div class="global-stat-label">Cities Scanned</div>
                 </div>
                 <div class="global-stat-item">
-                    <div class="global-stat-number" id="agentCodesFound">247</div>
+                    <div class="global-stat-number" id="agentCodesFound">0</div>
                     <div class="global-stat-label">Codes Discovered</div>
                 </div>
                 <div class="global-stat-item">
-                    <div class="global-stat-number" id="agentViolationsDetected">891</div>
+                    <div class="global-stat-number" id="agentViolationsDetected">0</div>
                     <div class="global-stat-label">Violation Rules Created</div>
                 </div>
                 <div class="global-stat-item">
@@ -580,7 +573,7 @@
             <div id="codexAgentTab" class="hidden">
                 <div class="main-content">
                     <div class="codex-header">
-                        <img src="codex_agent.png" alt="CodeX Agent" style="height: 200px;" onerror="this.style.display='none'"/>
+                        <img src="codex icon.png" alt="CodeX Agent" style="height: 200px;" onerror="this.style.display='none'"/>
                         <div style="flex: 1;">
                             <h2 class="codex-title">
                                 <span class="codex-text">CodeX</span> <span class="agent-text">Intelligence Agent</span>
@@ -676,90 +669,30 @@
                 <div class="main-content">
                     <h2 style="font-size: 24px; color: black; margin-bottom: 2rem;">Building Code Management</h2>
                     
-                    <!-- Pending Approval Section -->
                     <div class="code-section">
                         <div class="code-section-header">
-                            <span>📋 Pending Approval (3)</span>
+                            <span id="pendingCodesHeader">📋 Pending Approval (0)</span>
                             <div>
                                 <button class="btn btn-approve btn-small" onclick="approveAllCodes()">Approve All</button>
-                                <button class="btn btn-reject btn-small" onclick="rejectAllCodes()" style="margin-left: 0.5rem;">Reject All</button>
+                                <button class="btn btn-reject btn-small" onclick="rejectAllCodes()">Reject All</button>
                             </div>
                         </div>
                         <div class="code-list" id="pendingCodesList">
-                            <div class="code-item">
-                                <div class="code-info">
-                                    <div class="code-section-name">NEC 110.26(A)(1) - Electrical Panel Clearance</div>
-                                    <div class="code-description">Working space shall be not less than 30 inches wide in front of electrical equipment</div>
-                                </div>
-                                <div class="code-actions">
-                                    <button class="btn btn-approve btn-small">Approve</button>
-                                    <button class="btn btn-reject btn-small">Reject</button>
-                                    <button class="btn btn-edit btn-small">Edit</button>
-                                </div>
+                            <p style="text-align: center; color: #6b7280; padding: 1rem;">No codes pending approval.</p>
                             </div>
-                            <div class="code-item">
-                                <div class="code-info">
-                                    <div class="code-section-name">IRC R602.7.1 - Header Beam Sizing</div>
-                                    <div class="code-description">Headers shall be sized according to span tables for structural adequacy</div>
-                                </div>
-                                <div class="code-actions">
-                                    <button class="btn btn-approve btn-small">Approve</button>
-                                    <button class="btn btn-reject btn-small">Reject</button>
-                                    <button class="btn btn-edit btn-small">Edit</button>
-                                </div>
-                            </div>
-                            <div class="code-item">
-                                <div class="code-info">
-                                    <div class="code-section-name">NEC 210.8(A)(1) - GFCI Protection</div>
-                                    <div class="code-description">GFCI protection required for bathroom receptacle outlets</div>
-                                </div>
-                                <div class="code-actions">
-                                    <button class="btn btn-approve btn-small">Approve</button>
-                                    <button class="btn btn-reject btn-small">Reject</button>
-                                    <button class="btn btn-edit btn-small">Edit</button>
-                                </div>
-                            </div>
-                        </div>
                     </div>
 
-                    <!-- Approved Codes Section -->
                     <div class="code-section">
                         <div class="code-section-header">
-                            <span>✅ Approved Codes (247)</span>
+                            <span id="approvedCodesHeader">✅ Approved Codes (0)</span>
                             <button class="btn btn-primary btn-small" onclick="addNewCode()">Add New Code</button>
                         </div>
                         <div class="code-search">
                             <input type="text" placeholder="Search codes..." id="codeSearch" onkeyup="filterCodes()">
                         </div>
                         <div class="code-list" id="approvedCodesList">
-                            <div class="code-item">
-                                <div class="code-info">
-                                    <div class="code-section-name">NEC 210.19(A)(1) - Circuit Capacity</div>
-                                    <div class="code-description">Branch circuits shall not exceed 80% of rated capacity for continuous loads</div>
-                                </div>
-                                <div class="code-actions">
-                                    <button class="btn btn-edit btn-small">Edit</button>
-                                </div>
+                            <p style="text-align: center; color: #6b7280; padding: 1rem;">No approved codes found.</p>
                             </div>
-                            <div class="code-item">
-                                <div class="code-info">
-                                    <div class="code-section-name">IRC R310.2.1 - Emergency Egress</div>
-                                    <div class="code-description">Bedrooms shall have at least one operable emergency escape window</div>
-                                </div>
-                                <div class="code-actions">
-                                    <button class="btn btn-edit btn-small">Edit</button>
-                                </div>
-                            </div>
-                            <div class="code-item">
-                                <div class="code-info">
-                                    <div class="code-section-name">IFC 503.2.1 - Fire Lane Width</div>
-                                    <div class="code-description">Fire apparatus access roads shall be not less than 20 feet in width</div>
-                                </div>
-                                <div class="code-actions">
-                                    <button class="btn btn-edit btn-small">Edit</button>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -775,6 +708,8 @@
         let dbConnected = false;
         let currentCaseId = null;
         let analysisInProgress = false;
+        let analysisTimerInterval = null; // To store the interval ID
+        let analysisTimeRemaining = 5 * 60; // 5 minutes in seconds
 
         // Initialize Supabase with proper error handling
         async function initializeSupabase() {
@@ -825,103 +760,82 @@
             }
         }
 
-        // Generate permit-specific AI analysis
+        // Generate permit-specific AI analysis (only non-compliant items)
         function generatePermitSpecificAnalysis(permitType) {
+            // All analysis results are formatted without emojis
             const analysisTemplates = {
                 'electrical': `
                     <div class="compliance-section">
-                        <h4 style="color: #059669; margin-bottom: 1rem;">⚡ CodeX AI Electrical Analysis Complete</h4>
+                        <h4 style="color: #059669; margin-bottom: 1rem;">CodeX AI Electrical Analysis Complete (Violations Only)</h4>
                         <div class="violation-item">
-                            <strong>⚠️ Panel Location Issue:</strong> Electrical panel requires 3-foot clearance per NEC 110.26(A)(1)
-                        </div>
-                        <div class="approval-item">
-                            <strong>✅ Circuit Load Analysis:</strong> All circuits properly sized per NEC 210.19(A)(1)
-                        </div>
-                        <div class="approval-item">
-                            <strong>✅ Grounding System:</strong> Grounding electrodes meet NEC 250.52 requirements
+                            <strong>Panel Location Issue:</strong> Electrical panel requires 3-foot clearance per NEC 110.26(A)(1)
                         </div>
                         <div class="violation-item">
-                            <strong>⚠️ GFCI Protection:</strong> Missing GFCI outlets in bathroom per NEC 210.8(A)(1)
+                            <strong>GFCI Protection:</strong> Missing GFCI outlets in bathroom per NEC 210.8(A)(1)
                         </div>
                     </div>
                 `,
                 'residential': `
                     <div class="compliance-section">
-                        <h4 style="color: #059669; margin-bottom: 1rem;">🏠 CodeX AI Residential Analysis Complete</h4>
-                        <div class="approval-item">
-                            <strong>✅ Structural Compliance:</strong> All structural elements meet IRC requirements
-                        </div>
-                        <div class="approval-item">
-                            <strong>✅ Fire Safety:</strong> Egress routes comply with IRC R310.2.1
+                        <h4 style="color: #059669; margin-bottom: 1rem;">CodeX AI Residential Analysis Complete (Violations Only)</h4>
+                        <div class="violation-item">
+                            <strong>Electrical Issue:</strong> Panel location requires 3-foot clearance per NEC 110.26(A)(1)
                         </div>
                         <div class="violation-item">
-                            <strong>⚠️ Electrical Issue:</strong> Panel location requires 3-foot clearance per NEC 110.26(A)(1)
-                        </div>
-                        <div class="approval-item">
-                            <strong>✅ Plumbing:</strong> All plumbing systems comply with IPC codes
-                        </div>
-                        <div class="approval-item">
-                            <strong>✅ HVAC:</strong> Mechanical systems properly sized per IMC
+                            <strong>Energy Compliance:</strong> Plans must show prescriptive compliance with the 2015 International Energy Conservation Code or include REScheck or IC3 Compliance Report.
                         </div>
                     </div>
                 `,
                 'commercial': `
                     <div class="compliance-section">
-                        <h4 style="color: #059669; margin-bottom: 1rem;">🏢 CodeX AI Commercial Analysis Complete</h4>
-                        <div class="approval-item">
-                            <strong>✅ Structural Compliance:</strong> All structural elements meet IBC requirements
-                        </div>
-                        <div class="approval-item">
-                            <strong>✅ Fire Safety:</strong> Fire suppression systems comply with IFC 503.2.1
+                        <h4 style="color: #059669; margin-bottom: 1rem;">CodeX AI Commercial Analysis Complete (Violations Only)</h4>
+                        <div class="violation-item">
+                            <strong>ADA Compliance:</strong> Entrance ramp slope exceeds 1:20 per ADA Standards
                         </div>
                         <div class="violation-item">
-                            <strong>⚠️ ADA Compliance:</strong> Entrance ramp slope exceeds 1:20 per ADA Standards
-                        </div>
-                        <div class="approval-item">
-                            <strong>✅ Electrical Systems:</strong> Commercial electrical meets NEC requirements
+                            <strong>Emergency Egress:</strong> Exit corridor width insufficient per IBC 1018.2
                         </div>
                         <div class="violation-item">
-                            <strong>⚠️ Emergency Egress:</strong> Exit corridor width insufficient per IBC 1018.2
+                            <strong>Fire Suppression System:</strong> Inspection and certification required per NFPA 13
                         </div>
                     </div>
                 `,
                 'plumbing': `
                     <div class="compliance-section">
-                        <h4 style="color: #059669; margin-bottom: 1rem;">🔧 CodeX AI Plumbing Analysis Complete</h4>
-                        <div class="approval-item">
-                            <strong>✅ Water Pressure:</strong> Supply pressure meets IPC 604.3 requirements
+                        <h4 style="color: #059669; margin-bottom: 1rem;">CodeX AI Plumbing Analysis Complete (Violations Only)</h4>
+                        <div class="violation-item">
+                            <strong>Pipe Sizing:</strong> Hot water line undersized per IPC 604.5
                         </div>
                         <div class="violation-item">
-                            <strong>⚠️ Pipe Sizing:</strong> Hot water line undersized per IPC 604.5
-                        </div>
-                        <div class="approval-item">
-                            <strong>✅ Fixture Placement:</strong> All fixtures properly located per IPC 405
-                        </div>
-                        <div class="approval-item">
-                            <strong>✅ Drainage System:</strong> Drain sizing complies with IPC 710.1
+                            <strong>Backflow Prevention:</strong> Missing backflow prevention device on irrigation system per IPC 608.16
                         </div>
                     </div>
                 `,
                 'mechanical': `
                     <div class="compliance-section">
-                        <h4 style="color: #059669; margin-bottom: 1rem;">🌡️ CodeX AI Mechanical Analysis Complete</h4>
-                        <div class="approval-item">
-                            <strong>✅ Equipment Sizing:</strong> HVAC unit properly sized per IMC 312.1
-                        </div>
-                        <div class="approval-item">
-                            <strong>✅ Ductwork Design:</strong> Duct sizing meets IMC 603.2 requirements
+                        <h4 style="color: #059669; margin-bottom: 1rem;">CodeX AI Mechanical Analysis Complete (Violations Only)</h4>
+                        <div class="violation-item">
+                            <strong>Ventilation Rate:</strong> Insufficient outdoor air per IMC 403.3
                         </div>
                         <div class="violation-item">
-                            <strong>⚠️ Ventilation Rate:</strong> Insufficient outdoor air per IMC 403.3
+                            <strong>Duct Sealing:</strong> Ducts not sealed according to IMC 603.9 for energy efficiency
                         </div>
-                        <div class="approval-item">
-                            <strong>✅ Equipment Access:</strong> Service clearances meet IMC 306.5
+                    </div>
+                `,
+                'storm': `
+                    <div class="compliance-section">
+                        <h4 style="color: #059669; margin-bottom: 1rem;">CodeX AI Stormwater Analysis Complete (Violations Only)</h4>
+                        <div class="violation-item">
+                            <strong>Drainage Plan:</strong> Missing storm drainage plan per local ordinance
+                        </div>
+                        <div class="violation-item">
+                            <strong>Retention Pond Sizing:</strong> Retention pond undersized for 100-year storm event
                         </div>
                     </div>
                 `
             };
 
-            return analysisTemplates[permitType] || analysisTemplates['residential'];
+            return analysisTemplates[permitType.toLowerCase()] || analysisTemplates['residential']; // Default to residential if type is unknown
         }
 
         // Enhanced PDF Sealing Functions with Municipal Seal
@@ -1071,6 +985,13 @@
             }
             
             try {
+                // Ensure revisionHistory is always an array of objects
+                const revisionHistoryFormatted = (caseData.revisionHistory || []).map(rev => ({
+                    ...rev,
+                    date: rev.date || new Date().toISOString(), // Ensure date is string
+                    documents: rev.documents || [] // Ensure documents is array
+                }));
+
                 const { data, error } = await supabase
                     .from('cases')
                     .insert([{
@@ -1085,7 +1006,7 @@
                         plan_set_filename: caseData.planSet,
                         analysis_result: caseData.analysisResult || 'Initial submission received',
                         documents: caseData.documents || [],
-                        revision_history: caseData.revisionHistory || []
+                        revision_history: revisionHistoryFormatted
                     }]);
                 
                 if (error) throw error;
@@ -1127,7 +1048,12 @@
                     planSet: row.plan_set_filename,
                     analysisResult: row.analysis_result,
                     documents: row.documents || [],
-                    revisionHistory: row.revision_history || []
+                    // Ensure revision_history is always an array of objects
+                    revisionHistory: (row.revision_history || []).map(rev => ({
+                        ...rev,
+                        date: rev.date || new Date().toISOString(),
+                        documents: rev.documents || []
+                    }))
                 }));
                 
                 console.log(`✅ Loaded ${cases.length} cases from database`);
@@ -1145,6 +1071,12 @@
             }
             
             try {
+                const caseToUpdate = cases.find(c => c.permitNumber === permitNumber || c.id === permitNumber);
+                if (!caseToUpdate) {
+                    console.error('Case not found for update:', permitNumber);
+                    return;
+                }
+
                 const updateData = { 
                     status: newStatus,
                     updated_at: new Date().toISOString()
@@ -1154,21 +1086,52 @@
                     updateData.analysis_result = analysisResult;
                 }
                 
+                let finalPermitNumber = permitNumber;
                 // If approving, remove TEMP prefix
                 if (newStatus === 'Approved') {
-                    const finalPermitNumber = permitNumber.replace('TEMP-', '');
-                    updateData.permit_number = finalPermitNumber;
+                    finalPermitNumber = permitNumber.replace('TEMP-', '');
+                    updateData.permit_number = finalPermitNumber; // Update permit_number in DB
+                }
+
+                // Update revision history
+                const newRevisionHistory = [...caseToUpdate.revisionHistory];
+                let revisionEntry = {
+                    date: new Date().toISOString(),
+                    initiated_by: currentUserRole,
+                    documents: []
+                };
+
+                if (newStatus === 'Under Review' && analysisResult) {
+                    // This is when analysis starts/completes
+                    revisionEntry.rev = `Rev. ${newRevisionHistory.length + 1}`;
+                    revisionEntry.description = 'Under Review (when analysis starts)';
+                    revisionEntry.documents.push(`AI_Analysis_Report_${finalPermitNumber}.pdf`);
+                } else if (newStatus === 'Approved') {
+                    revisionEntry.rev = `Rev. ${newRevisionHistory.length + 1}`;
+                    revisionEntry.description = 'Approved (when approved)';
+                    revisionEntry.documents.push(`APPROVED_SEALED_PLANS_${finalPermitNumber}.pdf`);
+                } else if (newStatus === 'Corrections Needed') {
+                     revisionEntry.rev = `Rev. ${newRevisionHistory.length + 1}`;
+                     revisionEntry.description = 'Corrections Needed';
+                     revisionEntry.documents.push(`Correction_Letter_${finalPermitNumber}.pdf`);
                 }
                 
+                // Add new entry only if it's a distinct event
+                const lastRev = newRevisionHistory[newRevisionHistory.length - 1];
+                if (!lastRev || lastRev.description !== revisionEntry.description) {
+                    newRevisionHistory.push(revisionEntry);
+                    updateData.revision_history = newRevisionHistory;
+                }
+
                 const { data, error } = await supabase
                     .from('cases')
                     .update(updateData)
-                    .eq('permit_number', permitNumber);
+                    .eq('permit_number', permitNumber); // Use original permitNumber for the WHERE clause
                 
                 if (error) throw error;
                 
                 console.log(`✅ Updated case ${permitNumber} status to ${newStatus}`);
-                await loadCases();
+                await loadCases(); // Reload all cases to get updated data
                 
             } catch (error) {
                 console.error('❌ Failed to update case status:', error);
@@ -1179,7 +1142,13 @@
         // LocalStorage fallback functions
         function saveCaseToLocalStorage(caseData) {
             const localCases = JSON.parse(localStorage.getItem('globeCases')) || [];
-            localCases.push(caseData);
+            // Ensure revisionHistory is always an array of objects
+            const revisionHistoryFormatted = (caseData.revisionHistory || []).map(rev => ({
+                ...rev,
+                date: rev.date || new Date().toISOString(),
+                documents: rev.documents || []
+            }));
+            localCases.push({...caseData, revisionHistory: revisionHistoryFormatted});
             localStorage.setItem('globeCases', JSON.stringify(localCases));
             cases = localCases;
             console.log('📁 Case saved to localStorage');
@@ -1187,6 +1156,15 @@
 
         function loadCasesFromLocalStorage() {
             cases = JSON.parse(localStorage.getItem('globeCases')) || [];
+            // Ensure revisionHistory is always an array of objects for loaded cases
+            cases = cases.map(c => ({
+                ...c,
+                revisionHistory: (c.revisionHistory || []).map(rev => ({
+                    ...rev,
+                    date: rev.date || new Date().toISOString(),
+                    documents: rev.documents || []
+                }))
+            }));
             console.log(`📁 Loaded ${cases.length} cases from localStorage`);
         }
 
@@ -1197,18 +1175,49 @@
             );
             
             if (caseIndex !== -1) {
-                localCases[caseIndex].status = newStatus;
+                const caseToUpdate = localCases[caseIndex];
+                caseToUpdate.status = newStatus;
                 if (analysisResult) {
-                    localCases[caseIndex].analysisResult = analysisResult;
+                    caseToUpdate.analysisResult = analysisResult;
                 }
+
                 // If approving, remove TEMP prefix
                 if (newStatus === 'Approved') {
                     const finalPermitNumber = permitNumber.replace('TEMP-', '');
-                    localCases[caseIndex].permitNumber = finalPermitNumber;
-                    localCases[caseIndex].id = finalPermitNumber;
+                    caseToUpdate.permitNumber = finalPermitNumber;
+                    caseToUpdate.id = finalPermitNumber;
                 }
+
+                // Update revision history (same logic as Supabase update)
+                const newRevisionHistory = [...caseToUpdate.revisionHistory];
+                let revisionEntry = {
+                    date: new Date().toISOString(),
+                    initiated_by: currentUserRole,
+                    documents: []
+                };
+
+                if (newStatus === 'Under Review' && analysisResult) {
+                    revisionEntry.rev = `Rev. ${newRevisionHistory.length + 1}`;
+                    revisionEntry.description = 'Under Review (when analysis starts)';
+                    revisionEntry.documents.push(`AI_Analysis_Report_${caseToUpdate.permitNumber.replace('TEMP-', '')}.pdf`);
+                } else if (newStatus === 'Approved') {
+                    revisionEntry.rev = `Rev. ${newRevisionHistory.length + 1}`;
+                    revisionEntry.description = 'Approved (when approved)';
+                    revisionEntry.documents.push(`APPROVED_SEALED_PLANS_${caseToUpdate.permitNumber.replace('TEMP-', '')}.pdf`);
+                } else if (newStatus === 'Corrections Needed') {
+                     revisionEntry.rev = `Rev. ${newRevisionHistory.length + 1}`;
+                     revisionEntry.description = 'Corrections Needed';
+                     revisionEntry.documents.push(`Correction_Letter_${caseToUpdate.permitNumber.replace('TEMP-', '')}.pdf`);
+                }
+                
+                const lastRev = newRevisionHistory[newRevisionHistory.length - 1];
+                if (!lastRev || lastRev.description !== revisionEntry.description) {
+                    newRevisionHistory.push(revisionEntry);
+                    caseToUpdate.revisionHistory = newRevisionHistory;
+                }
+
                 localStorage.setItem('globeCases', JSON.stringify(localCases));
-                cases = localCases;
+                cases = localCases; // Update global 'cases' array reference
                 console.log(`📁 Updated case ${permitNumber} in localStorage`);
             }
         }
@@ -1233,7 +1242,7 @@
                     currentUser = username;
                     currentUserRole = role;
                     
-                    document.getElementById('currentUser').textContent = `${username} (${role})`;
+                    // document.getElementById('currentUser').textContent = `${username} (${role})`; // This line is now effectively hidden by CSS
                     document.getElementById('loginScreen').classList.add('hidden');
                     document.getElementById('mainApp').classList.remove('hidden');
                     
@@ -1258,7 +1267,7 @@
             document.getElementById('loginForm').reset();
         }
 
-        function showTab(tabName) {
+        async function showTab(tabName) {
             ['dashboard', 'caseDetails', 'codeManagement', 'codexAgent'].forEach(tab => {
                 document.getElementById(tab + 'Tab').classList.add('hidden');
             });
@@ -1267,11 +1276,17 @@
                 tab.classList.remove('active');
             });
             
+            const selectedTabElement = document.querySelector(`.tab[onclick="showTab('${tabName}')"]`);
+            if (selectedTabElement) {
+                selectedTabElement.classList.add('active');
+            }
+            
             document.getElementById(tabName + 'Tab').classList.remove('hidden');
-            event.target.classList.add('active');
             
             if (tabName === 'dashboard') {
                 updateDashboard();
+            } else if (tabName === 'codeManagement') {
+                await loadCodeManagement(); // Load codes when Code Management tab is opened
             }
         }
 
@@ -1340,6 +1355,22 @@
                         <p style="margin: 0.7rem 0; font-size: 18px;"><strong>Plan Set:</strong> ${caseData.planSet || 'No file uploaded'}</p>
                         <p style="margin: 0.7rem 0; font-size: 18px;"><strong>Submission Date:</strong> ${caseData.submissionDate || 'N/A'}</p>
                     </div>
+
+                    <div style="margin-top: 2rem;">
+                        <h3 style="font-size: 20px; color: black; margin-bottom: 1rem;">Revision History</h3>
+                        <div style="background: #f9fafb; border-radius: 8px; padding: 1.5rem; max-height: 200px; overflow-y: auto;">
+                            ${caseData.revisionHistory && caseData.revisionHistory.length > 0 ?
+                                caseData.revisionHistory.map(rev => `
+                                    <div style="margin-bottom: 0.7rem; padding-bottom: 0.7rem; border-bottom: 1px dashed #e0e0e0;">
+                                        <strong>${rev.rev || `Rev. ${caseData.revisionHistory.indexOf(rev) + 1}`} - ${rev.description}</strong><br>
+                                        Date: ${new Date(rev.date).toLocaleDateString()} | Initiated by: ${rev.initiated_by}<br>
+                                        Documents: ${rev.documents && rev.documents.length > 0 ? rev.documents.join(', ') : 'No documents issued'}
+                                    </div>
+                                `).join('')
+                                : '<p style="color: #6b7280;">No revision history yet.</p>'
+                            }
+                        </div>
+                    </div>
                     
                     <div id="analysisContainer">
                         ${caseData.analysisResult && caseData.analysisResult !== 'Initial submission received' && caseData.analysisResult !== 'Initial submission received and validated. Ready for analysis.' ? `
@@ -1368,6 +1399,7 @@
             if (!caseData) return;
 
             analysisInProgress = true;
+            analysisTimeRemaining = 5 * 60; // Reset timer to 5 minutes
             
             // Update button state
             const analyzeBtn = document.getElementById('analyzeBtn');
@@ -1380,7 +1412,10 @@
                 <div class="analysis-loading">
                     <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
                         <span class="spinner"></span>
-                        <h3 style="color: #f59e0b; margin-left: 1rem;">CodeX AI Analysis in Progress</h3>
+                        <h3 style="color: #059669; margin-left: 1rem;">CodeX AI Analysis in Progress</h3>
+                    </div>
+                    <div class="analysis-countdown" id="analysisCountdown">
+                        ⏱️ Estimated time: 5 minutes • High-precision analysis in progress
                     </div>
                     <div class="analysis-steps" id="analysisSteps">
                         <div class="analysis-step active" id="step1">🔍 Scanning building plans...</div>
@@ -1391,40 +1426,71 @@
                         <div class="analysis-step" id="step6">🌡️ Checking HVAC compliance...</div>
                         <div class="analysis-step" id="step7">✅ Generating compliance report...</div>
                     </div>
-                    <div style="text-align: center; margin-top: 1rem; color: #6b7280;">
-                        Estimated time: 5 minutes • High-precision analysis in progress
-                    </div>
                 </div>
             `;
 
             // Simulate 5-minute analysis with step progression
-            const steps = ['step1', 'step2', 'step3', 'step4', 'step5', 'step6', 'step7'];
-            let currentStep = 0;
+            const steps = [
+                { id: 'step1', text: 'Scanning building plans...' },
+                { id: 'step2', text: 'Checking structural compliance...' },
+                { id: 'step3', text: 'Analyzing fire safety systems...' },
+                { id: 'step4', text: 'Reviewing electrical codes...' },
+                { id: 'step5', text: 'Validating plumbing systems...' },
+                { id: 'step6', text: 'Checking HVAC compliance...' },
+                { id: 'step7', text: 'Generating compliance report...' }
+            ];
+            let currentStepIndex = 0;
 
-            const progressAnalysis = () => {
-                if (currentStep > 0) {
-                    document.getElementById(steps[currentStep - 1]).classList.remove('active');
+            // Timer update for countdown
+            analysisTimerInterval = setInterval(() => {
+                analysisTimeRemaining--;
+                const minutes = Math.floor(analysisTimeRemaining / 60);
+                const seconds = analysisTimeRemaining % 60;
+
+                const countdownEl = document.getElementById('analysisCountdown');
+                if (countdownEl) {
+                    if (analysisTimeRemaining > 0) {
+                        countdownEl.textContent = `⏱️ Estimated time: ${minutes} minute${minutes !== 1 ? 's' : ''} • High-precision analysis in progress`;
+                    } else {
+                        countdownEl.textContent = `⏱️ Analysis completing • Finalizing results...`;
+                    }
                 }
-                if (currentStep < steps.length) {
-                    document.getElementById(steps[currentStep]).classList.add('active');
-                    currentStep++;
-                    setTimeout(progressAnalysis, 42000); // ~6 seconds per step = 42 seconds total for demo (instead of 5 minutes)
-                } else {
-                    // Analysis complete
+
+                if (analysisTimeRemaining <= 0) {
+                    clearInterval(analysisTimerInterval);
                     completeAnalysis(caseId, caseData.permitType);
                 }
-            };
+            }, 1000); // Update every second for countdown
 
-            setTimeout(progressAnalysis, 6000); // Start first step after 6 seconds
+            // Step progression logic
+            const advanceStep = () => {
+                if (currentStepIndex < steps.length) {
+                    // Deactivate previous step if any
+                    if (currentStepIndex > 0) {
+                        const prevStepEl = document.getElementById(steps[currentStepIndex - 1].id);
+                        if (prevStepEl) prevStepEl.classList.remove('active');
+                    }
+                    // Activate current step
+                    const currentStepEl = document.getElementById(steps[currentStepIndex].id);
+                    if (currentStepEl) currentStepEl.classList.add('active');
+
+                    currentStepIndex++;
+                    // Schedule next step (distribute 5 minutes across steps)
+                    if (currentStepIndex <= steps.length) {
+                        setTimeout(advanceStep, (5 * 60 * 1000) / steps.length); // Total time / number of steps
+                    }
+                }
+            };
+            advanceStep(); // Start the first step immediately
         }
 
         async function completeAnalysis(caseId, permitType) {
-            const analysisResult = generatePermitSpecificAnalysis(permitType);
+            clearInterval(analysisTimerInterval); // Ensure interval is cleared
+            analysisInProgress = false;
+
+            const analysisResult = generatePermitSpecificAnalysis(permitType); // Pass permitType
             
             await updateCaseStatus(caseId, 'Under Review', analysisResult);
-            
-            // Reset analysis state
-            analysisInProgress = false;
             
             // Refresh the case view to show results
             viewCase(caseId);
@@ -1442,19 +1508,25 @@
                     const sealedPdfBytes = await generateSealedPDF(caseData, approverName);
                     
                     // Final permit number (remove TEMP prefix)
-                    const finalPermitNumber = caseData.permitNumber.replace('TEMP-', '');
+                    const originalPermitNumber = caseData.permitNumber;
+                    const finalPermitNumber = originalPermitNumber.replace('TEMP-', '');
                     const fileName = `APPROVED_SEALED_PLANS_${finalPermitNumber}.pdf`;
                     
                     await downloadSealedPDF(sealedPdfBytes, fileName);
                     
-                    await updateCaseStatus(caseId, 'Approved');
+                    await updateCaseStatus(originalPermitNumber, 'Approved'); // Use original ID for update, new ID is set inside
+
+                    // Update the local cases array after a successful approval to reflect new permit number and status
+                    const updatedCase = cases.find(c => c.id === finalPermitNumber);
+                    if(updatedCase) {
+                        viewCase(updatedCase.id); // View with new permit number
+                    }
                     
                     const smsMessage = `Case ${finalPermitNumber} has been APPROVED! Your sealed plans are ready for download in the client portal.`;
                     
-                    alert(`✅ Case Approved Successfully!\n\n📋 Sealed plans generated: ${fileName}\n📱 SMS sent to ${caseData.clientPhone}:\n"${smsMessage}"\n\n🔗 Client can download sealed plans from the client portal.\n\n✅ Permit number updated: ${caseData.permitNumber} → ${finalPermitNumber}`);
+                    alert(`✅ Case Approved Successfully!\n\n📋 Sealed plans generated: ${fileName}\n📱 SMS sent to ${caseData.clientPhone}:\n"${smsMessage}"\n\n🔗 Client can download sealed plans from the client portal.\n\n✅ Permit number updated: ${originalPermitNumber} → ${finalPermitNumber}`);
                     
                     updateDashboard();
-                    viewCase(finalPermitNumber); // View with new permit number
                     
                 } catch (error) {
                     console.error('❌ Failed to approve case:', error);
@@ -1490,9 +1562,9 @@
         // Codex Agent Functions
         let agentIsScanning = false;
         let agentProgress = 0;
-        let agentCitiesScannedCount = 12;
-        let agentCodesFoundCount = 247;
-        let agentViolationsDetectedCount = 891;
+        let agentCitiesScannedCount = 0; // Reset to 0
+        let agentCodesFoundCount = 0; // Reset to 0
+        let agentViolationsDetectedCount = 0; // Reset to 0
 
         function startAgentCodeDiscovery() {
             const cityName = document.getElementById('agentCityName').value;
@@ -1516,7 +1588,7 @@
             simulateAgentCodeDiscovery(cityName, stateCode);
         }
 
-        function simulateAgentCodeDiscovery(cityName, stateCode) {
+        async function simulateAgentCodeDiscovery(cityName, stateCode) {
             const steps = [
                 { progress: 15, text: 'Connecting to Municode library...', log: 'Connected to 3,300+ municipal codes' },
                 { progress: 30, text: 'Scanning city website...', log: `Found ${cityName} municipal website` },
@@ -1527,7 +1599,7 @@
             ];
             let currentStep = 0;
 
-            const processStep = () => {
+            const processStep = async () => { // Made async to await Supabase inserts
                 if (currentStep < steps.length && agentIsScanning) {
                     const step = steps[currentStep];
                     agentProgress = step.progress;
@@ -1537,13 +1609,42 @@
                     addAgentLogEntry('info', step.log);
 
                     if (step.progress === 100) {
-                        agentCitiesScannedCount++;
-                        agentCodesFoundCount += 3;
-                        agentViolationsDetectedCount += 9;
+                        // Simulate discovered codes and insert them into building_codes table
+                        const newCodesCount = Math.floor(Math.random() * 5) + 1; // Discover 1-5 new codes
+                        const newCodesToInsert = [];
+                        for (let i = 0; i < newCodesCount; i++) {
+                            const codeSection = `CODE-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`;
+                            const codeName = `Discovered Code #${i+1} for ${cityName}`;
+                            const codeDescription = `Automatically discovered rule from ${cityName} municipal code books.`;
+                            newCodesToInsert.push({
+                                code_section: codeSection,
+                                name: codeName,
+                                description: codeDescription,
+                                status: 'pending_review' // Status for newly discovered codes
+                            });
+                        }
+
+                        if (newCodesToInsert.length > 0 && supabase) {
+                            try {
+                                const { error: insertError } = await supabase
+                                    .from('building_codes')
+                                    .insert(newCodesToInsert);
+                                if (insertError) throw insertError;
+                                console.log(`✅ Inserted ${newCodesToInsert.length} discovered codes into building_codes.`);
+                            } catch (insertError) {
+                                console.error('❌ Failed to insert discovered codes:', insertError);
+                            }
+                        }
+
+                        // Update global stats
+                        agentCitiesScannedCount++; 
+                        agentCodesFoundCount += newCodesCount; // Add the number of new codes inserted
+                        agentViolationsDetectedCount += newCodesCount * 3; // Simulate new violation rules
                         updateAgentStats();
                         agentIsScanning = false;
                         document.getElementById('agentCurrentOperation').textContent = 'Discovery Complete';
-                        addAgentLogEntry('success', `Discovery for ${cityName}, ${stateCode} finished. Total codes: ${agentCodesFoundCount}`);
+                        addAgentLogEntry('success', `Discovery for ${cityName}, ${stateCode} finished. Integrated ${newCodesToInsert.length} new codes. Total codes: ${agentCodesFoundCount}`);
+                        await loadCodeManagement(); // Refresh the code management tab to show newly discovered codes
                     }
 
                     currentStep++;
@@ -1599,11 +1700,14 @@
         }
 
         function integrateDiscoveredCodes() {
+            // The actual insertion now happens directly during simulateAgentCodeDiscovery
+            // This button now serves as a confirmation/refresh for the Code Management tab
             addAgentLogEntry('info', 'Integrating codes into main GLOBE system...');
-            setTimeout(() => {
+            setTimeout(async () => {
                 addAgentLogEntry('success', 'All discovered codes integrated into GLOBE database');
                 addAgentLogEntry('info', 'Code compliance rules activated');
                 alert('Success! Discovered codes have been integrated into GLOBE. Check the Code Management tab to see all imported codes.');
+                await loadCodeManagement(); // Refresh code management tab after integration
             }, 1500);
         }
 
@@ -1619,14 +1723,14 @@
             document.getElementById('agentProgressFill').style.width = '0%';
             document.getElementById('agentProgressText').textContent = 'Checking for updates...';
 
-            setTimeout(() => {
+            setTimeout(async () => { // Made async to await DB operations
                 agentProgress = 50;
                 document.getElementById('agentProgressFill').style.width = '50%';
                 document.getElementById('agentProgressText').textContent = 'Comparing against online sources...';
                 addAgentLogEntry('info', 'Comparing current database with latest municipal code versions.');
             }, 1000);
 
-            setTimeout(() => {
+            setTimeout(async () => { // Made async to await DB operations
                 agentProgress = 100;
                 document.getElementById('agentProgressFill').style.width = '100%';
                 document.getElementById('agentCurrentOperation').textContent = 'Update Complete';
@@ -1635,6 +1739,33 @@
                 const newCodesFound = Math.floor(Math.random() * 3);
                 if (newCodesFound > 0) {
                     addAgentLogEntry('success', `Found ${newCodesFound} new or updated codes.`);
+                    // Simulate inserting new/updated codes to building_codes
+                    const updatedCodesToInsert = [];
+                    for(let i = 0; i < newCodesFound; i++) {
+                        const codeSection = `UPDATE-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`;
+                        const codeName = `Updated Code #${i+1}`;
+                        const codeDescription = `Updated rule from municipality.`;
+                        updatedCodesToInsert.push({
+                            code_section: codeSection,
+                            name: codeName,
+                            description: codeDescription,
+                            status: 'pending_review' // New/updated codes go for review
+                        });
+                    }
+
+                    if (updatedCodesToInsert.length > 0 && supabase) {
+                        try {
+                            const { error: insertError } = await supabase
+                                .from('building_codes')
+                                .insert(updatedCodesToInsert);
+                            if (insertError) throw insertError;
+                            console.log(`✅ Inserted ${updatedCodesToInsert.length} updated codes into building_codes.`);
+                            await loadCodeManagement(); // Refresh tab
+                        } catch (insertError) {
+                            console.error('❌ Failed to insert updated codes:', insertError);
+                        }
+                    }
+
                     agentCodesFoundCount += newCodesFound;
                     agentViolationsDetectedCount += newCodesFound * 3;
                     updateAgentStats();
@@ -1645,34 +1776,247 @@
             }, 2500);
         }
 
-        // Code Management Functions
-        function approveAllCodes() {
-            if (confirm('Approve all pending codes? This will integrate them into the active code database.')) {
-                alert('✅ All pending codes approved and integrated into GLOBE database.');
-                // In real implementation, would move codes from pending to approved
+        // Code Management Functions (now working with status column)
+        let allBuildingCodes = []; // Stores all codes fetched from DB
+
+        async function loadCodeManagement() {
+            if (!dbConnected || !supabase) {
+                displayPendingCodes([]);
+                displayApprovedCodes([]);
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .from('building_codes')
+                    .select('*')
+                    .order('code_section', { ascending: true }); // Order by code section
+
+                if (error) throw error;
+                allBuildingCodes = data; // Store all codes
+
+                const pending = allBuildingCodes.filter(code => code.status === 'pending_review');
+                const approved = allBuildingCodes.filter(code => code.status === 'approved');
+
+                displayPendingCodes(pending);
+                displayApprovedCodes(approved);
+
+            } catch (error) {
+                console.error('❌ Failed to load codes for management:', error);
+                displayPendingCodes([]);
+                displayApprovedCodes([]);
             }
         }
 
-        function rejectAllCodes() {
-            if (confirm('Reject all pending codes? This will remove them from the pending list.')) {
-                alert('❌ All pending codes rejected and removed.');
-                // In real implementation, would remove codes from pending list
+        function displayPendingCodes(codes) {
+            const listContainer = document.getElementById('pendingCodesList');
+            const header = document.getElementById('pendingCodesHeader');
+            listContainer.innerHTML = '';
+            header.textContent = `📋 Pending Approval (${codes.length})`;
+
+            if (codes.length === 0) {
+                listContainer.innerHTML = '<p style="text-align: center; color: #6b7280; padding: 1rem;">No codes pending approval.</p>';
+                return;
+            }
+
+            codes.forEach(code => {
+                const codeItem = document.createElement('div');
+                codeItem.className = 'code-item';
+                codeItem.innerHTML = `
+                    <div class="code-info">
+                        <div class="code-section-name">${code.code_section} - ${code.name || 'N/A'}</div>
+                        <div class="code-description">${code.description || 'No description'}</div>
+                    </div>
+                    <div class="code-actions">
+                        <button class="btn btn-approve btn-small" onclick="approveCode('${code.id}')">Approve</button>
+                        <button class="btn btn-reject btn-small" onclick="rejectCode('${code.id}')">Reject</button>
+                        <button class="btn btn-edit btn-small" onclick="editCode('${code.id}')">Edit</button>
+                    </div>
+                `;
+                listContainer.appendChild(codeItem);
+            });
+        }
+
+        function displayApprovedCodes(codes) {
+            const listContainer = document.getElementById('approvedCodesList');
+            const header = document.getElementById('approvedCodesHeader');
+            listContainer.innerHTML = '';
+            header.textContent = `✅ Approved Codes (${codes.length})`;
+
+            if (codes.length === 0) {
+                listContainer.innerHTML = '<p style="text-align: center; color: #6b7280; padding: 1rem;">No approved codes found.</p>';
+                return;
+            }
+
+            codes.forEach(code => {
+                const codeItem = document.createElement('div');
+                codeItem.className = 'code-item';
+                codeItem.innerHTML = `
+                    <div class="code-info">
+                        <div class="code-section-name">${code.code_section} - ${code.name || 'N/A'}</div>
+                        <div class="code-description">${code.description || 'No description'}</div>
+                    </div>
+                    <div class="code-actions">
+                        <button class="btn btn-edit btn-small" onclick="editCode('${code.id}')">Edit</button>
+                    </div>
+                `;
+                listContainer.appendChild(codeItem);
+            });
+        }
+
+        async function approveCode(codeId) {
+            if (!dbConnected || !supabase) { alert('Database not connected. Cannot perform action.'); return; }
+            if (confirm('Are you sure you want to approve this code? It will be used for compliance analysis.')) {
+                try {
+                    const { error } = await supabase
+                        .from('building_codes')
+                        .update({ status: 'approved', updated_at: new Date().toISOString() })
+                        .eq('id', codeId);
+                    if (error) throw error;
+                    alert('Code approved successfully!');
+                    loadCodeManagement(); // Refresh the list
+                } catch (error) {
+                    console.error('Error approving code:', error);
+                    alert('Failed to approve code: ' + error.message);
+                }
             }
         }
 
-        function addNewCode() {
-            const codeSection = prompt('Enter code section (e.g., NEC 110.26):');
-            const codeDescription = prompt('Enter code description:');
+        async function rejectCode(codeId) {
+            if (!dbConnected || !supabase) { alert('Database not connected. Cannot perform action.'); return; }
+            if (confirm('Are you sure you want to reject this code? It will be marked as rejected and not used for analysis.')) {
+                try {
+                    const { error } = await supabase
+                        .from('building_codes')
+                        .update({ status: 'rejected', updated_at: new Date().toISOString() })
+                        .eq('id', codeId);
+                    if (error) throw error;
+                    alert('Code rejected.');
+                    loadCodeManagement(); // Refresh the list
+                } catch (error) {
+                    console.error('Error rejecting code:', error);
+                    alert('Failed to reject code: ' + error.message);
+                }
+            }
+        }
+
+        async function editCode(codeId) {
+            if (!dbConnected || !supabase) { alert('Database not connected. Cannot perform action.'); return; }
+            const codeToEdit = allBuildingCodes.find(c => c.id === codeId); // Find from all fetched codes
+            if (!codeToEdit) { alert('Code not found.'); return; }
+
+            const newCodeSection = prompt('Edit code section (e.g., NEC 110.26):', codeToEdit.code_section);
+            if (newCodeSection === null) return; // User cancelled
+
+            const newCodeName = prompt('Edit code name:', codeToEdit.name);
+            if (newCodeName === null) return; // User cancelled
+
+            const newDescription = prompt('Edit description:', codeToEdit.description);
+            if (newDescription === null) return; // User cancelled
             
-            if (codeSection && codeDescription) {
-                alert(`✅ New code added:\n\nSection: ${codeSection}\nDescription: ${codeDescription}\n\nCode has been added to the pending approval list.`);
-                // In real implementation, would add to pending codes list
+            try {
+                const { error } = await supabase
+                    .from('building_codes')
+                    .update({ 
+                        code_section: newCodeSection.trim(), 
+                        name: newCodeName.trim(),
+                        description: newDescription.trim(),
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', codeId);
+                if (error) throw error;
+                alert('Code updated successfully!');
+                loadCodeManagement(); // Refresh the list
+            } catch (error) {
+                console.error('Error updating code:', error);
+                alert('Failed to update code: ' + error.message);
+            }
+        }
+
+        async function approveAllCodes() {
+            if (!dbConnected || !supabase) { alert('Database not connected. Cannot perform action.'); return; }
+            const pending = allBuildingCodes.filter(code => code.status === 'pending_review');
+            if (pending.length === 0) {
+                alert('No codes currently pending approval.');
+                return;
+            }
+            if (confirm(`Approve all ${pending.length} pending codes? This will integrate them into the active code database.`)) {
+                try {
+                    const pendingIds = pending.map(code => code.id);
+                    const { error } = await supabase
+                        .from('building_codes')
+                        .update({ status: 'approved', updated_at: new Date().toISOString() })
+                        .in('id', pendingIds);
+                    if (error) throw error;
+                    alert(`✅ All ${pending.length} pending codes approved and integrated into GLOBE database.`);
+                    loadCodeManagement(); // Refresh the lists
+                } catch (error) {
+                    console.error('Error approving all codes:', error);
+                    alert('Failed to approve all codes: ' + error.message);
+                }
+            }
+        }
+
+        async function rejectAllCodes() {
+            if (!dbConnected || !supabase) { alert('Database not connected. Cannot perform action.'); return; }
+            const pending = allBuildingCodes.filter(code => code.status === 'pending_review');
+            if (pending.length === 0) {
+                alert('No codes currently pending approval.');
+                return;
+            }
+            if (confirm(`Reject all ${pending.length} pending codes? This will mark them as rejected and not used for analysis.`)) {
+                try {
+                    const pendingIds = pending.map(code => code.id);
+                    const { error } = await supabase
+                        .from('building_codes')
+                        .update({ status: 'rejected', updated_at: new Date().toISOString() })
+                        .in('id', pendingIds);
+                    if (error) throw error;
+                    alert(`❌ All ${pending.length} pending codes rejected.`);
+                    loadCodeManagement(); // Refresh the lists
+                } catch (error) {
+                    console.error('Error rejecting all codes:', error);
+                    alert('Failed to reject all codes: ' + error.message);
+                }
+            }
+        }
+
+        async function addNewCode() {
+            if (!dbConnected || !supabase) { alert('Database not connected. Cannot perform action.'); return; }
+            const codeSection = prompt('Enter code section (e.g., NEC 110.26):');
+            if (!codeSection) return;
+            const codeName = prompt('Enter code name (e.g., Electrical Panel Clearance):');
+            if (!codeName) return;
+            const codeDescription = prompt('Enter code description:');
+            if (!codeDescription) return;
+
+            try {
+                const { data, error } = await supabase
+                    .from('building_codes')
+                    .insert([{ 
+                        code_section: codeSection.trim(), 
+                        name: codeName.trim(),
+                        description: codeDescription.trim(), 
+                        status: 'pending_review' // New codes manually added also go to pending approval
+                    }]);
+                if (error) throw error;
+                alert(`✅ New code "${codeSection}" added to pending approval!`);
+                loadCodeManagement(); // Refresh the lists
+            } catch (error) {
+                console.error('Error adding new code:', error);
+                alert('Failed to add new code: ' + error.message);
             }
         }
 
         function filterCodes() {
-            // Code filtering functionality would be implemented here
-            console.log('Filtering codes...');
+            const searchTerm = document.getElementById('codeSearch').value.toLowerCase();
+            const filteredCodes = allBuildingCodes.filter(code => 
+                code.status === 'approved' && // Only filter approved codes
+                ((code.code_section && code.code_section.toLowerCase().includes(searchTerm)) ||
+                (code.name && code.name.toLowerCase().includes(searchTerm)) ||
+                (code.description && code.description.toLowerCase().includes(searchTerm)))
+            );
+            displayApprovedCodes(filteredCodes); // Display filtered list
         }
 
         // Expose functions globally
@@ -1691,7 +2035,10 @@
         window.rejectAllCodes = rejectAllCodes;
         window.addNewCode = addNewCode;
         window.filterCodes = filterCodes;
-        window.saveCase = saveCase;
+        window.approveCode = approveCode; // Expose for individual code approval
+        window.rejectCode = rejectCode; // Expose for individual code rejection
+        window.editCode = editCode; // Expose for individual code editing
+        window.saveCase = saveCase; // Make sure this is exposed for client portal interaction
         
         console.log('✅ GLOBE System Initialized Successfully');
         console.log('🔥 PDF Sealing System Ready');
